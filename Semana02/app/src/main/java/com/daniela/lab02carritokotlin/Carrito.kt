@@ -11,26 +11,26 @@ abstract class ItemCarrito(
 class ProductoFisico(
     nombre: String,
     precio: Double,
-    cantidad: Int,
-    val pesoKg: Double
+    cantidad: Int
 ) : ItemCarrito(nombre, precio, cantidad) {
-
-    override fun calcularSubtotal(): Double {
-        val costoEnvio = pesoKg * 5.0
-        return (precio * cantidad) + costoEnvio
-    }
+    override fun calcularSubtotal(): Double = precio * cantidad
 }
 
 class ProductoDigital(
     nombre: String,
     precio: Double,
-    cantidad: Int,
-    val esSuscripcion: Boolean
+    cantidad: Int
 ) : ItemCarrito(nombre, precio, cantidad) {
+    override fun calcularSubtotal(): Double = precio * cantidad
+}
 
-    override fun calcularSubtotal(): Double {
-        val total = precio * cantidad
-        return if (esSuscripcion) total * 0.90 else total
+class GestorRecomendaciones {
+    fun obtenerSugerencia(items: List<ItemCarrito>): String {
+        return if (items.any { it.nombre.contains("Laptop", ignoreCase = true) }) {
+            "Sugerencia: Agrega un Mouse Logitech o una funda con 15% de descuento"
+        } else {
+            "Sugerencia: Revisa las promociones destacadas del dia"
+        }
     }
 }
 
@@ -38,17 +38,14 @@ fun main() {
     println("==================================")
     println("CARRITO DE COMPRAS TIENDA TECSUP")
     println("==================================")
-    val nombreCliente = "Daniela Vila Ramos"
-    val carrito: List<ItemCarrito> = listOf(
-        ProductoFisico("Laptop HP", 2500.0, 1, 2.5),
-        ProductoDigital("Licencia IntelliJ", 150.0, 1, true)
+    val carrito = listOf<ItemCarrito>(
+        ProductoFisico("Laptop HP", 2500.0, 1)
     )
-
-    println("Cliente: $nombreCliente\n")
+    val recomendador = GestorRecomendaciones()
 
     for (item in carrito) {
         println("Producto : ${item.nombre}")
         println("Subtotal  : S/ ${item.calcularSubtotal()}")
-        println("----------------------------------")
     }
+    println("\n${recomendador.obtenerSugerencia(carrito)}")
 }
