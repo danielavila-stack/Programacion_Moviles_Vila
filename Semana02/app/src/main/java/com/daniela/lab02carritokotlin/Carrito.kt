@@ -8,19 +8,29 @@ abstract class ItemCarrito(
     abstract fun calcularSubtotal(): Double
 }
 
-class ProductoConDescuento(
+open class ProductoFisico(
     nombre: String,
     precio: Double,
     cantidad: Int,
-    private val porcentajeDescuento: Double = 0.0
+    val pesoKg: Double
 ) : ItemCarrito(nombre, precio, cantidad) {
 
-    private fun calcularDescuento(): Double {
-        return (precio * cantidad) * (porcentajeDescuento / 100)
+    override fun calcularSubtotal(): Double {
+        return precio * cantidad
     }
+}
+
+class ProductoImportado(
+    nombre: String,
+    precio: Double,
+    cantidad: Int,
+    pesoKg: Double,
+    val arancel: Double
+) : ProductoFisico(nombre, precio, cantidad, pesoKg) {
 
     override fun calcularSubtotal(): Double {
-        return (precio * cantidad) - calcularDescuento()
+        val base = super.calcularSubtotal()
+        return base + arancel
     }
 }
 
@@ -32,8 +42,8 @@ fun main() {
     val carrito = mutableListOf<ItemCarrito>()
     println("Cliente: $nombreCliente\n")
 
-    carrito.add(ProductoConDescuento("Laptop HP", 2500.0, 1, 10.0))
-    carrito.add(ProductoConDescuento("Mouse Logitech", 45.5, 2))
+    carrito.add(ProductoFisico("Laptop HP", 2500.0, 1, 2.5))
+    carrito.add(ProductoImportado("Teclado Mecanico", 300.0, 1, 0.8, 45.0))
 
     for (item in carrito) {
         println("Producto : ${item.nombre}")
