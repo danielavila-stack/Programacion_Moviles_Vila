@@ -6,12 +6,29 @@ interface Vendible {
     fun calcularSubtotal(): Double
 }
 
-data class Producto(
+abstract class Descuentable(
     override val nombre: String,
     override val precio: Double,
-    var cantidad: Int
+    open var cantidad: Int
 ) : Vendible {
-    override fun calcularSubtotal(): Double = precio * cantidad
+    abstract fun aplicarDescuento(): Double
+}
+
+class ProductoFisico(
+    nombre: String,
+    precio: Double,
+    cantidad: Int,
+    val porcentajeDescuento: Double = 0.0
+) : Descuentable(nombre, precio, cantidad) {
+
+    override fun aplicarDescuento(): Double {
+        val totalSinDescuento = precio * cantidad
+        return totalSinDescuento * (porcentajeDescuento / 100)
+    }
+
+    override fun calcularSubtotal(): Double {
+        return (precio * cantidad) - aplicarDescuento()
+    }
 }
 
 fun main() {
@@ -19,14 +36,14 @@ fun main() {
     println("CARRITO DE COMPRAS TIENDA TECSUP")
     println("==================================")
     val nombreCliente = "Daniela Vila Ramos"
-    val carrito = mutableListOf<Producto>()
+    val carrito = mutableListOf<ProductoFisico>()
     println("Cliente: $nombreCliente")
     println()
 
-    carrito.add(Producto("Laptop HP", 2500.0, 1))
-    carrito.add(Producto("Mouse Logitech", 45.5, 2))
-    carrito.add(Producto("Audifonos Sony", 120.0, 1))
-    carrito.add(Producto("USB Kingston 64GB", 25.0, 3))
+    carrito.add(ProductoFisico("Laptop HP", 2500.0, 1, 10.0))
+    carrito.add(ProductoFisico("Mouse Logitech", 45.5, 2))
+    carrito.add(ProductoFisico("Audifonos Sony", 120.0, 1, 5.0))
+    carrito.add(ProductoFisico("USB Kingston 64GB", 25.0, 3))
 
     for (item in carrito) {
         println("Producto : ${item.nombre}")
