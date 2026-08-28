@@ -18,7 +18,6 @@ data class RegistroEstacionamiento(
     val horasEfectivas: Int = max(1, horasIngresadas)
 }
 
-// Estructura para registrar el desglose por cada hora
 data class DetalleHora(
     val hora: Int,
     val tarifaBase: Double,
@@ -26,7 +25,6 @@ data class DetalleHora(
     val importe: Double
 )
 
-// Estructura con la información consolidada
 data class ResultadoCalculo(
     val registro: RegistroEstacionamiento,
     val detalles: List<DetalleHora>,
@@ -35,7 +33,6 @@ data class ResultadoCalculo(
     val total: Double
 )
 
-// Clase encargada del procesamiento de las reglas de negocio
 class CalculadorEstacionamiento {
 
     fun procesar(registro: RegistroEstacionamiento): ResultadoCalculo {
@@ -43,8 +40,6 @@ class CalculadorEstacionamiento {
         var subtotal = 0.0
 
         for (h in 1..registro.horasEfectivas) {
-            // Reglas de recargo:
-            // 1-2 horas: 0% | 3-5 horas: 20% | >5 horas: 50%
             val porcentajeRecargo = when {
                 h <= 2 -> 0.0
                 h <= 5 -> 0.20
@@ -64,7 +59,6 @@ class CalculadorEstacionamiento {
             )
         }
 
-        // Regla: 10% de descuento sobre el total acumulado si es cliente frecuente
         val descuento = if (registro.esClienteFrecuente) subtotal * 0.10 else 0.0
         val total = subtotal - descuento
 
@@ -72,8 +66,38 @@ class CalculadorEstacionamiento {
     }
 }
 
+// Clase para formatear e imprimir la boleta de cobro
+class ReporteEstacionamiento {
+
+    fun imprimirBoleta(resultado: ResultadoCalculo) {
+        val reg = resultado.registro
+
+        println("\n==========================================")
+        println("Cliente : ${reg.cliente}")
+        println("Placa   : ${reg.placa}")
+        println("Tipo    : ${reg.tipo.name}")
+        println("Horas   : ${reg.horasEfectivas}")
+        println("Estado  : ${if (reg.esClienteFrecuente) "Cliente Frecuente (10% Desc.)" else "Cliente Regular"}")
+        println("------------------------------------------")
+        println("TARIFA BÁSICA S/ ${String.format("%.2f", reg.tipo.tarifaBase)}")
+        println("HORA\tTARIFA\tRECARGO\tIMPORTE")
+
+        for (d in resultado.detalles) {
+            println("${d.hora}\t${String.format("%.2f", d.tarifaBase)}\t${d.porcentajeRecargo.toInt()}%\t${String.format("%.2f", d.importe)}")
+        }
+
+        println("------------------------------------------")
+        if (reg.esClienteFrecuente) {
+            println("Subtotal  : S/ ${String.format("%.2f", resultado.subtotal)}")
+            println("Descuento : -S/ ${String.format("%.2f", resultado.descuento)}")
+        }
+        println("TOTAL     : S/ ${String.format("%.2f", resultado.total)}")
+        println("==========================================")
+    }
+}
+
 fun main() {
-    println("=== CÁLCULOS ===")
+    println("=== REGISTRO DE ESTACIONAMIENTO ===")
 
     print("Ingrese el nombre del cliente: ")
     val cliente = readLine().orEmpty()
@@ -81,8 +105,13 @@ fun main() {
     print("Ingrese la placa del vehículo: ")
     val placa = readLine().orEmpty()
 
-    println("\nSeleccione el tipo de vehículo (1. Moto, 2. Auto, 3. Camioneta): ")
+    println("\nSeleccione el tipo de vehículo:")
+    println("1. Moto (S/ 2.00)")
+    println("2. Auto (S/ 4.00)")
+    println("3. Camioneta (S/ 10.00)")
+    print("Opción (1-3): ")
     val opcionTipo = readLine()?.toIntOrNull() ?: 2
+
     val tipo = when (opcionTipo) {
         1 -> TipoVehiculo.MOTO
         3 -> TipoVehiculo.CAMIONETA
@@ -96,14 +125,14 @@ fun main() {
     val esFrecuenteInput = readLine().orEmpty().lowercase()
     val esClienteFrecuente = esFrecuenteInput == "s" || esFrecuenteInput == "si"
 
+    // 1. Ingreso
     val registro = RegistroEstacionamiento(cliente, placa, tipo, horasIngresadas, esClienteFrecuente)
 
-    // Ejecución de la lógica de negocio
+    // 2. Cálculos
     val calculador = CalculadorEstacionamiento()
     val resultado = calculador.procesar(registro)
 
-    println("\n--- Resumen del Cálculo ---")
-    println("Subtotal acumulado : S/ ${resultado.subtotal}")
-    println("Descuento (10%)    : -S/ ${resultado.descuento}")
-    println("Total a pagar      : S/ ${resultado.total}")
+    // 3. Mostrar resultados
+    val reporte = ReporteEstacionamiento()
+    reporte.imprimirBoleta(resultado)
 }
