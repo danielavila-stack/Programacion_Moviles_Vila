@@ -2,14 +2,12 @@ package com.daniela.lab02carritokotlin
 
 import kotlin.math.max
 
-// 1. Tarifas base por tipo de vehículo (Moto: S/ 2, Auto: S/ 4, Camioneta: S/ 10)
 enum class TipoVehiculo(val tarifaBase: Double) {
     MOTO(2.0),
     AUTO(4.0),
     CAMIONETA(10.0)
 }
 
-// 2. Modelo de datos con la regla de mínimo 1 hora de estancia
 data class RegistroEstacionamiento(
     val cliente: String,
     val placa: String,
@@ -17,12 +15,65 @@ data class RegistroEstacionamiento(
     val horasIngresadas: Int,
     val esClienteFrecuente: Boolean
 ) {
-    // Regla: Ningún vehículo puede registrar menos de 1 hora
     val horasEfectivas: Int = max(1, horasIngresadas)
 }
 
+// Estructura para registrar el desglose por cada hora
+data class DetalleHora(
+    val hora: Int,
+    val tarifaBase: Double,
+    val porcentajeRecargo: Double,
+    val importe: Double
+)
+
+// Estructura con la información consolidada
+data class ResultadoCalculo(
+    val registro: RegistroEstacionamiento,
+    val detalles: List<DetalleHora>,
+    val subtotal: Double,
+    val descuento: Double,
+    val total: Double
+)
+
+// Clase encargada del procesamiento de las reglas de negocio
+class CalculadorEstacionamiento {
+
+    fun procesar(registro: RegistroEstacionamiento): ResultadoCalculo {
+        val detalles = mutableListOf<DetalleHora>()
+        var subtotal = 0.0
+
+        for (h in 1..registro.horasEfectivas) {
+            // Reglas de recargo:
+            // 1-2 horas: 0% | 3-5 horas: 20% | >5 horas: 50%
+            val porcentajeRecargo = when {
+                h <= 2 -> 0.0
+                h <= 5 -> 0.20
+                else -> 0.50
+            }
+
+            val importeHora = registro.tipo.tarifaBase * (1 + porcentajeRecargo)
+            subtotal += importeHora
+
+            detalles.add(
+                DetalleHora(
+                    hora = h,
+                    tarifaBase = registro.tipo.tarifaBase,
+                    porcentajeRecargo = porcentajeRecargo * 100,
+                    importe = importeHora
+                )
+            )
+        }
+
+        // Regla: 10% de descuento sobre el total acumulado si es cliente frecuente
+        val descuento = if (registro.esClienteFrecuente) subtotal * 0.10 else 0.0
+        val total = subtotal - descuento
+
+        return ResultadoCalculo(registro, detalles, subtotal, descuento, total)
+    }
+}
+
 fun main() {
-    println("=== NGRESO DE DATOS ===")
+    println("=== CÁLCULOS ===")
 
     print("Ingrese el nombre del cliente: ")
     val cliente = readLine().orEmpty()
@@ -30,13 +81,8 @@ fun main() {
     print("Ingrese la placa del vehículo: ")
     val placa = readLine().orEmpty()
 
-    println("\nSeleccione el tipo de vehículo:")
-    println("1. Moto (S/ 2.00)")
-    println("2. Auto (S/ 4.00)")
-    println("3. Camioneta (S/ 10.00)")
-    print("Opción (1-3): ")
+    println("\nSeleccione el tipo de vehículo (1. Moto, 2. Auto, 3. Camioneta): ")
     val opcionTipo = readLine()?.toIntOrNull() ?: 2
-
     val tipo = when (opcionTipo) {
         1 -> TipoVehiculo.MOTO
         3 -> TipoVehiculo.CAMIONETA
@@ -52,10 +98,12 @@ fun main() {
 
     val registro = RegistroEstacionamiento(cliente, placa, tipo, horasIngresadas, esClienteFrecuente)
 
-    println("\n--- Datos capturados ---")
-    println("Cliente: ${registro.cliente}")
-    println("Placa: ${registro.placa}")
-    println("Tipo: ${registro.tipo.name} (S/ ${registro.tipo.tarifaBase}/hr)")
-    println("Horas registradas (Efectivas): ${registro.horasEfectivas}")
-    println("Es cliente frecuente: ${registro.esClienteFrecuente}")
+    // Ejecución de la lógica de negocio
+    val calculador = CalculadorEstacionamiento()
+    val resultado = calculador.procesar(registro)
+
+    println("\n--- Resumen del Cálculo ---")
+    println("Subtotal acumulado : S/ ${resultado.subtotal}")
+    println("Descuento (10%)    : -S/ ${resultado.descuento}")
+    println("Total a pagar      : S/ ${resultado.total}")
 }
