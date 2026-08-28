@@ -32,20 +32,40 @@ class GestorRecomendaciones {
             "Sugerencia: Revisa las promociones destacadas del dia"
         }
     }
+
+    fun calcularDescuentoPromocional(total: Double): Double {
+        return if (total > 2000.0) total * 0.05 else 0.0
+    }
 }
 
 fun main() {
     println("==================================")
     println("CARRITO DE COMPRAS TIENDA TECSUP")
     println("==================================")
+    val nombreCliente = "Daniela Vila Ramos"
     val carrito = listOf<ItemCarrito>(
-        ProductoFisico("Laptop HP", 2500.0, 1)
+        ProductoFisico("Laptop HP", 2500.0, 1),
+        ProductoFisico("Mouse Logitech", 45.5, 2),
+        ProductoDigital("Licencia IntelliJ", 150.0, 1)
     )
-    val recomendador = GestorRecomendaciones()
+    val gestorPromociones = GestorRecomendaciones()
 
+    println("Cliente: $nombreCliente\n")
+
+    var subtotalGeneral = 0.0
     for (item in carrito) {
+        val st = item.calcularSubtotal()
+        subtotalGeneral += st
         println("Producto : ${item.nombre}")
-        println("Subtotal  : S/ ${item.calcularSubtotal()}")
+        println("Subtotal  : S/ $st")
+        println("----------------------------------")
     }
-    println("\n${recomendador.obtenerSugerencia(carrito)}")
+
+    val descPromo = gestorPromociones.calcularDescuentoPromocional(subtotalGeneral)
+    val totalFinal = subtotalGeneral - descPromo
+
+    println("Subtotal           : S/ $subtotalGeneral")
+    println("Descuento Especial : S/ $descPromo")
+    println("TOTAL A PAGAR      : S/ $totalFinal")
+    println("\n${gestorPromociones.obtenerSugerencia(carrito)}")
 }
