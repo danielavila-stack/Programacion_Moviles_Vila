@@ -1,15 +1,12 @@
-package com.daniela.lab02carritokotlin
+package com.daniela.lab02carritokotlin.lab02tarifas
 
-import java.util.Scanner
+fun Double.format(decimals: Int = 2): String = "%.${decimals}f".format(this)
 
 fun main() {
-    val scanner = Scanner(System.`in`)
-
     println("=== SISTEMA DE ESTACIONAMIENTO ===")
 
     print("Cuantos vehiculos desea procesar?: ")
-    val cantidadVehiculos = scanner.nextInt()
-    scanner.nextLine() // Limpiar el salto de linea del scanner
+    val cantidadVehiculos = readln().toIntOrNull() ?: 0
 
     for (i in 1..cantidadVehiculos) {
         println("\n------------------------------------------")
@@ -17,10 +14,10 @@ fun main() {
         println("------------------------------------------")
 
         print("Nombre del cliente: ")
-        val cliente = scanner.nextLine()
+        val cliente = readln()
 
         print("Placa del vehiculo: ")
-        val placa = scanner.nextLine()
+        val placa = readln()
 
         println("\nSeleccione Tipo de Vehiculo:")
         println("1. Moto (S/ 2.00)")
@@ -28,8 +25,7 @@ fun main() {
         println("3. Camioneta (S/ 10.00)")
         print("Opcion: ")
 
-        // Se lee como texto para evitar la excepcion InputMismatchException
-        val entradaTipo = scanner.nextLine().lowercase().trim()
+        val entradaTipo = readln().lowercase().trim()
 
         val (tipoVehiculo, tarifaBasica) = when (entradaTipo) {
             "1", "moto" -> Pair("MOTO", 2.0)
@@ -39,11 +35,10 @@ fun main() {
         }
 
         print("Cantidad de horas: ")
-        val horas = scanner.nextInt()
+        val horas = readln().toIntOrNull() ?: 0
 
         print("Es cliente frecuente? (s/n): ")
-        val esFrecuenteStr = scanner.next()
-        scanner.nextLine() // Limpiar el bufer de texto
+        val esFrecuenteStr = readln()
         val esFrecuente = esFrecuenteStr.equals("s", ignoreCase = true)
 
         val estadoCliente = if (esFrecuente) "Cliente Frecuente" else "Cliente Regular"
@@ -57,8 +52,10 @@ fun main() {
         println("Horas   : $horas")
         println("Estado  : $estadoCliente")
         println("------------------------------------------")
-        println("TARIFA BASICA S/ ${String.format("%.2f", tarifaBasica)}")
-        println(String.format("%-6s %-10s %-10s %-10s", "HORA", "TARIFA", "RECARGO", "IMPORTE"))
+        println("TARIFA BASICA S/ ${tarifaBasica.format(2)}")
+
+        // Cabecera alineada manualmente sin utilidades de Java
+        println("HORA   TARIFA     RECARGO    IMPORTE")
 
         var totalPagar = 0.0
 
@@ -68,18 +65,23 @@ fun main() {
             val importeHora = tarifaBasica + recargoMonto
             totalPagar += importeHora
 
-            println(String.format("%-6d %-10.2f %-10s %-10.2f", hora, tarifaBasica, "$porcentajeRecargo%", importeHora))
+            val horaStr = hora.toString().padEnd(6)
+            val tarifaStr = tarifaBasica.format(2).padEnd(10)
+            val recargoStr = "$porcentajeRecargo%".padEnd(10)
+            val importeStr = importeHora.format(2)
+
+            println("$horaStr $tarifaStr $recargoStr $importeStr")
         }
 
         if (esFrecuente) {
             val descuento = totalPagar * 0.10
             totalPagar -= descuento
             println("------------------------------------------")
-            println("Descuento frecuente (10%): -S/ ${String.format("%.2f", descuento)}")
+            println("Descuento frecuente (10%): -S/ ${descuento.format(2)}")
         }
 
         println("------------------------------------------")
-        println("TOTAL    : S/ ${String.format("%.2f", totalPagar)}")
+        println("TOTAL    : S/ ${totalPagar.format(2)}")
         println("==========================================")
     }
 
