@@ -96,7 +96,13 @@ fun main() {
                             var totalPagar = 0.0
 
                             for (hora in 1..horas) {
-                                val porcentajeRecargo = if (hora >= 3) 20 else 0
+                                // Nuevas tarifas por tramos de horas
+                                val porcentajeRecargo = when (hora) {
+                                    in 1..2 -> 0
+                                    in 3..5 -> 20
+                                    in 6..10 -> 40
+                                    else -> 50 // 11 a más
+                                }
                                 val recargoMonto = tarifaBasica * (porcentajeRecargo / 100.0)
                                 val importeHora = tarifaBasica + recargoMonto
                                 totalPagar += importeHora
