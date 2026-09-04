@@ -81,8 +81,10 @@ fun main() {
 
                             val estadoCliente = if (esFrecuente) "Cliente Frecuente" else "Cliente Regular"
 
+                            // Impresión de Boleta / Recibo
                             println("\n==========================================")
-                            println("--- RESUMEN ---")
+                            println("            BOLETA DE VENTA               ")
+                            println("==========================================")
                             println("Cliente : $cliente")
                             println("Placa   : $placa")
                             println("Tipo    : $tipoVehiculo")
@@ -96,12 +98,11 @@ fun main() {
                             var totalPagar = 0.0
 
                             for (hora in 1..horas) {
-                                // Nuevas tarifas por tramos de horas
                                 val porcentajeRecargo = when (hora) {
                                     in 1..2 -> 0
                                     in 3..5 -> 20
                                     in 6..10 -> 40
-                                    else -> 50 // 11 a más
+                                    else -> 50
                                 }
                                 val recargoMonto = tarifaBasica * (porcentajeRecargo / 100.0)
                                 val importeHora = tarifaBasica + recargoMonto
@@ -116,15 +117,31 @@ fun main() {
                             }
 
                             if (esFrecuente) {
-                                val descuento = totalPagar * 0.10
-                                totalPagar -= descuento
+                                val descuentoFrecuente = totalPagar * 0.10
+                                totalPagar -= descuentoFrecuente
                                 println("------------------------------------------")
-                                println("Descuento frecuente (10%): -S/ ${descuento.format(2)}")
+                                println("Descuento frecuente (10%)        : -S/ ${descuentoFrecuente.format(2)}")
                             }
 
+                            if (totalPagar > 500.0) {
+                                val descuentoMonto = totalPagar * 0.20
+                                totalPagar -= descuentoMonto
+                                println("Descuento por consumo > S/ 500 (20%): -S/ ${descuentoMonto.format(2)}")
+                            }
+
+                            val igv = totalPagar * 0.18
+                            val totalConIgv = totalPagar + igv
+
                             println("------------------------------------------")
-                            println("TOTAL    : S/ ${totalPagar.format(2)}")
+                            println("SUBTOTAL                         : S/ ${totalPagar.format(2)}")
+                            println("IGV (18%)                        : S/ ${igv.format(2)}")
+                            println("TOTAL A PAGAR                    : S/ ${totalConIgv.format(2)}")
                             println("==========================================")
+
+                            // Muestra de espacio disponible en tiempo real tras generar la boleta
+                            val libres = aforoMaximo - vehiculosEstacionados
+                            println(">>> ESPACIOS LIBRES EN ESTACIONAMIENTO: $libres de $aforoMaximo <<<")
+                            println("==========================================\n")
                         }
                     }
                 }
@@ -143,7 +160,9 @@ fun main() {
                         println("[ERROR] No puede retirar $salida vehículos. Solo hay $vehiculosEstacionados en el estacionamiento.")
                     } else {
                         vehiculosEstacionados -= salida
-                        println("\n[OK] Se retiraron $salida vehículo(s). Quedan $vehiculosEstacionados ocupados de $aforoMaximo.")
+                        val libres = aforoMaximo - vehiculosEstacionados
+                        println("\n[OK] Se retiraron $salida vehículo(s).")
+                        println(" Espacios ocupados: $vehiculosEstacionados | Espacios libres: $libres")
                     }
                 }
             }
