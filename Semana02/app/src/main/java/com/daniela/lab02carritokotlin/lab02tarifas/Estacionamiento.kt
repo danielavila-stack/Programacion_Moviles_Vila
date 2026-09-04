@@ -23,6 +23,7 @@ fun main() {
         println("1. Moto (S/ 2.00)")
         println("2. Auto (S/ 4.00)")
         println("3. Camioneta (S/ 10.00)")
+        println("4. Trailer (S/ 20.00)")
         print("Opcion: ")
 
         val entradaTipo = readln().lowercase().trim()
@@ -31,6 +32,7 @@ fun main() {
             "1", "moto" -> Pair("MOTO", 2.0)
             "2", "auto" -> Pair("AUTO", 4.0)
             "3", "camioneta" -> Pair("CAMIONETA", 10.0)
+            "4", "trailer" -> Pair("TRAILER", 20.0)
             else -> Pair("DESCONOCIDO", 0.0)
         }
 
