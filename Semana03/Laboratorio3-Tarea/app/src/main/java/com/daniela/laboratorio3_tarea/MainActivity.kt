@@ -3,6 +3,7 @@ package com.daniela.laboratorio3_tarea
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -15,8 +16,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import kotlin.math.roundToInt
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -38,6 +41,11 @@ fun RegistroNotasScreen() {
 
     var redondear by remember { mutableStateOf(false) }
     var confirmado by remember { mutableStateOf(false) }
+
+    var calculado by remember { mutableStateOf(false) }
+
+    val promedioPonderado = (nota1 * 0.20f) + (nota2 * 0.25f) + (nota3 * 0.30f) + (nota4 * 0.25f)
+    val promedioFinal = if (redondear) promedioPonderado.roundToInt().toFloat() else promedioPonderado
 
     Column(
         modifier = Modifier
@@ -68,10 +76,10 @@ fun RegistroNotasScreen() {
             Text("Notas del ciclo", fontSize = 18.sp, fontWeight = FontWeight.Bold)
             Text("Desliza para asignar cada nota (0 a 20)", fontSize = 12.sp, color = Color.Gray)
 
-            CursoItem("Fundamentos de Programación", 20, nota1) { nota1 = it }
-            CursoItem("Programación Orientada a Objetos", 25, nota2) { nota2 = it }
-            CursoItem("Programación en Móviles", 30, nota3) { nota3 = it }
-            CursoItem("Base de Datos", 25, nota4) { nota4 = it }
+            CursoItem("Fundamentos de Programación", 20, nota1) { nota1 = it; calculado = false }
+            CursoItem("Programación Orientada a Objetos", 25, nota2) { nota2 = it; calculado = false }
+            CursoItem("Programación en Móviles", 30, nota3) { nota3 = it; calculado = false }
+            CursoItem("Base de Datos", 25, nota4) { nota4 = it; calculado = false }
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -81,7 +89,7 @@ fun RegistroNotasScreen() {
                 Text("Redondear promedio final", fontSize = 14.sp)
                 Switch(
                     checked = redondear,
-                    onCheckedChange = { redondear = it }
+                    onCheckedChange = { redondear = it; calculado = false }
                 )
             }
 
@@ -97,7 +105,7 @@ fun RegistroNotasScreen() {
             }
 
             Button(
-                onClick = { },
+                onClick = { calculado = true },
                 enabled = confirmado,
                 modifier = Modifier
                     .fillMaxWidth()
@@ -107,14 +115,32 @@ fun RegistroNotasScreen() {
                 Text("CALCULAR PROMEDIO", fontWeight = FontWeight.Bold)
             }
 
+            if (!calculado) {
+                Text(
+                    text = "Asigna las notas y confirma para calcular",
+                    color = Color.Gray,
+                    fontSize = 14.sp,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 10.dp),
+                    textAlign = TextAlign.Center
+                )
+            } else {
+                ResultadoCard(
+                    promedioPonderado = promedioPonderado,
+                    promedioFinal = promedioFinal,
+                    isRedondeado = redondear
+                )
+            }
+
             Spacer(modifier = Modifier.weight(1f))
 
             Text(
-                text = "Desarrollado por: Daniela",
+                text = "Desarrollado por: Daniela Vila",
                 fontSize = 12.sp,
                 color = Color.Gray,
                 modifier = Modifier.fillMaxWidth(),
-                textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                textAlign = TextAlign.Center
             )
         }
     }
@@ -155,6 +181,85 @@ fun CursoItem(nombre: String, peso: Int, nota: Float, onNotaChange: (Float) -> U
                 thumbColor = Color(0xFF6750A4),
                 activeTrackColor = Color(0xFF6750A4)
             )
+        )
+    }
+}
+
+@Composable
+fun ResultadoCard(promedioPonderado: Float, promedioFinal: Float, isRedondeado: Boolean) {
+    val (observacion, chipBgColor, chipTextColor) = when {
+        promedioFinal >= 17f -> Triple("EXCELENTE", Color(0xFFD0E8D0), Color(0xFF0F5128))
+        promedioFinal >= 13f -> Triple("APROBADO", Color(0xFFE1F0DA), Color(0xFF2E7D32))
+        promedioFinal >= 10f -> Triple("EN RECUPERACIÓN", Color(0xFFFFF3CD), Color(0xFF856404))
+        else -> Triple("DESAPROBADO", Color(0xFFF8D7DA), Color(0xFF721C24))
+    }
+
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(16.dp),
+            colors = CardDefaults.cardColors(containerColor = Color.White),
+            border = BorderStroke(1.dp, Color(0xFFE0E0E0))
+        ) {
+            Column(
+                modifier = Modifier.padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(6.dp)
+            ) {
+                Text(
+                    text = "Promedio ponderado:  ${String.format("%.2f", promedioPonderado)}",
+                    fontSize = 15.sp,
+                    color = Color.DarkGray
+                )
+
+                Row(verticalAlignment = Alignment.Bottom) {
+                    Text(
+                        text = "Promedio final:  ",
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFF6750A4)
+                    )
+                    Text(
+                        text = if (isRedondeado) "${promedioFinal.toInt()}" else String.format("%.2f", promedioFinal),
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFF6750A4)
+                    )
+                }
+
+                if (isRedondeado) {
+                    Text(
+                        text = "(redondeado)",
+                        fontSize = 11.sp,
+                        color = Color.Gray
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(4.dp))
+
+                Surface(
+                    color = chipBgColor,
+                    shape = RoundedCornerShape(16.dp)
+                ) {
+                    Text(
+                        text = observacion,
+                        color = chipTextColor,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 14.sp,
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp)
+                    )
+                }
+            }
+        }
+
+        Text(
+            text = "✓  Promedio calculado correctamente",
+            color = Color(0xFF2E7D32),
+            fontWeight = FontWeight.Medium,
+            fontSize = 13.sp,
+            modifier = Modifier.padding(start = 4.dp)
         )
     }
 }
