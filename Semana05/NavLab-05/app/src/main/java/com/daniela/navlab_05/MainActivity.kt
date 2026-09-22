@@ -1,26 +1,19 @@
-package com.daniela.navlab05
+package com.daniela.navlab_05
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
-import androidx.compose.ui.Modifier
+import com.daniela.navlab_05.navigation.AppNavigation
+import com.daniela.navlab_05.ui.theme.NavLab05Theme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            MaterialTheme {
-                Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colorScheme.background
-                ) {
-                    // El enrutador AppNavigation se vinculara en el Commit 2
-                }
+            NavLab05Theme {
+                AppNavigation()
             }
         }
     }
