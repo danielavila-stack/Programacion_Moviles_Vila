@@ -44,7 +44,6 @@ fun main() {
         println("Producto mas caro: ${masCaro.nombre} " + String.format("(S/%.2f)", masCaro.precio))
     }
 
-    //Aplicación de descuento con 'when'
     val descuento = calcularDescuento(total)
     val totalConDescuento = total - descuento
 
@@ -59,14 +58,14 @@ fun main() {
     println(String.format("TOTAL CON DESCUENTO : S/ %.2f", totalConDescuento))
     println()
 
-    //reto adicional
+
     println("Gracias por su compra, $nombreCliente!")
 
     println("=========================================")
     println("            RETO ADICIONAL               ")
     println("=========================================")
 
-    // 1. Buscar producto con find
+
     val productoBuscado = buscarProducto(carrito, "Mouse Logitech")
     if (productoBuscado != null) {
         println("Producto encontrado: ${productoBuscado.nombre} - Precio: S/ ${productoBuscado.precio}")
@@ -76,14 +75,13 @@ fun main() {
 
     println()
 
-    // 2. Eliminar producto con removeIf ("Mouse Logitech")
+
     val nombreAEliminar = "Mouse Logitech"
     println("Eliminando producto: $nombreAEliminar...")
     carrito.removeIf { it.nombre.equals(nombreAEliminar, ignoreCase = true) }
 
     println()
 
-    // 3. Volver a mostrar el detalle y totales actualizados
     println("--- CARRITO ACTUALIZADO TRAS ELIMINACIÓN ---")
     mostrarDetalle(carrito)
 
