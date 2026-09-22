@@ -23,6 +23,11 @@ fun PantallaCarrito() {
 
     val productos = remember { mutableStateListOf<Producto>() }
 
+    // Cálculos para el resumen
+    val subtotal = productos.sumOf { it.subtotal }
+    val igv = subtotal * 0.18
+    val total = subtotal + igv
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -37,66 +42,152 @@ fun PantallaCarrito() {
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            OutlinedTextField(
-                value = nombre,
-                onValueChange = { nombre = it },
-                label = { Text("Nombre del producto") },
-                modifier = Modifier.fillMaxWidth(),
-                singleLine = true
-            )
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                OutlinedTextField(
-                    value = precio,
-                    onValueChange = { precio = it },
-                    label = { Text("Precio (S/)") },
-                    modifier = Modifier.weight(1f),
-                    singleLine = true
-                )
-                OutlinedTextField(
-                    value = cantidad,
-                    onValueChange = { cantidad = it },
-                    label = { Text("Cantidad") },
-                    modifier = Modifier.weight(1f),
-                    singleLine = true
-                )
-            }
-
-            Button(
-                onClick = {
-                    val precioNum = precio.toDoubleOrNull() ?: 0.0
-                    val cantidadNum = cantidad.toIntOrNull() ?: 0
-                    if (nombre.isNotBlank() && precioNum > 0 && cantidadNum > 0) {
-                        productos.add(Producto(nombre, precioNum, cantidadNum))
-                        nombre = ""
-                        precio = ""
-                        cantidad = ""
-                    }
-                },
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text("AGREGAR")
-            }
-
-            HorizontalDivider()
-
-            LazyColumn(
+            // Formulario
+            Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .weight(1f),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
+                    .padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
-                items(productos) { producto ->
-                    TarjetaProducto(
-                        producto = producto,
-                        onEliminar = { productos.remove(producto) }
+                OutlinedTextField(
+                    value = nombre,
+                    onValueChange = { nombre = it },
+                    label = { Text("Nombre del producto") },
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true
+                )
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    OutlinedTextField(
+                        value = precio,
+                        onValueChange = { precio = it },
+                        label = { Text("Precio (S/)") },
+                        modifier = Modifier.weight(1f),
+                        singleLine = true
                     )
+                    OutlinedTextField(
+                        value = cantidad,
+                        onValueChange = { cantidad = it },
+                        label = { Text("Cantidad") },
+                        modifier = Modifier.weight(1f),
+                        singleLine = true
+                    )
+                }
+
+                Button(
+                    onClick = {
+                        val precioNum = precio.toDoubleOrNull() ?: 0.0
+                        val cantidadNum = cantidad.toIntOrNull() ?: 0
+                        if (nombre.isNotBlank() && precioNum > 0 && cantidadNum > 0) {
+                            productos.add(Producto(nombre, precioNum, cantidadNum))
+                            nombre = ""
+                            precio = ""
+                            cantidad = ""
+                        }
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("AGREGAR")
+                }
+            }
+
+            HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
+
+            // Lista de productos o mensaje cuando el carrito está vacío
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f)
+            ) {
+                if (productos.isEmpty()) {
+                    Column(
+                        modifier = Modifier.fillMaxSize(),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        Text(
+                            text = "Tu carrito está vacío",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.Gray
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = "Agrega tu primer producto",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = Color.Gray
+                        )
+                    }
+                } else {
+                    LazyColumn(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(horizontal = 16.dp, vertical = 8.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        items(productos) { producto ->
+                            TarjetaProducto(
+                                producto = producto,
+                                onEliminar = { productos.remove(producto) }
+                            )
+                        }
+                    }
+                }
+            }
+
+            // Panel inferior de resumen de totales
+            Surface(
+                modifier = Modifier.fillMaxWidth(),
+                color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    Text(
+                        text = "Productos: ${productos.size}",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = Color.Gray
+                    )
+                    Spacer(modifier = Modifier.height(2.dp))
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text("Subtotal", style = MaterialTheme.typography.bodyMedium)
+                        Text("S/ ${"%.2f".format(subtotal)}", style = MaterialTheme.typography.bodyMedium)
+                    }
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text("IGV (18%)", style = MaterialTheme.typography.bodyMedium)
+                        Text("S/ ${"%.2f".format(igv)}", style = MaterialTheme.typography.bodyMedium)
+                    }
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "TOTAL",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Text(
+                            text = "S/ ${"%.2f".format(total)}",
+                            style = MaterialTheme.typography.titleLarge,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    }
                 }
             }
         }
