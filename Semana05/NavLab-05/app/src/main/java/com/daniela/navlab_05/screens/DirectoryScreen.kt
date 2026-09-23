@@ -1,13 +1,12 @@
 package com.daniela.navlab_05.screens
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -24,26 +23,23 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.daniela.navlab_05.components.ProfileHeaderBanner
-import com.daniela.navlab_05.components.StudentInfoCard
+import com.daniela.navlab_05.components.StudentListItemCard
 import com.daniela.navlab_05.models.sampleStudents
 import com.daniela.navlab_05.ui.theme.PurplePrimary
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DetailScreen(
-    studentId: Int,
+fun DirectoryScreen(
+    onStudentClick: (Int) -> Unit,
     onBackClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val student = sampleStudents.find { it.id == studentId } ?: sampleStudents.first()
-
     Scaffold(
         topBar = {
             TopAppBar(
                 title = {
                     Text(
-                        text = "Expediente Académico",
+                        text = "Directorio de Alumnos",
                         fontWeight = FontWeight.Bold,
                         fontSize = 18.sp
                     )
@@ -65,27 +61,20 @@ fun DetailScreen(
         },
         modifier = modifier
     ) { innerPadding ->
-        Column(
+        LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
                 .background(MaterialTheme.colorScheme.background)
-                .padding(innerPadding)
-                .verticalScroll(rememberScrollState())
+                .padding(innerPadding),
+            contentPadding = PaddingValues(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            ProfileHeaderBanner(
-                title = student.name,
-                subtitle = student.career
-            )
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            Column(
-                modifier = Modifier.padding(horizontal = 20.dp)
-            ) {
-                StudentInfoCard(student = student)
+            items(sampleStudents) { student ->
+                StudentListItemCard(
+                    student = student,
+                    onClick = { onStudentClick(student.id) }
+                )
             }
-
-            Spacer(modifier = Modifier.height(24.dp))
         }
     }
 }
