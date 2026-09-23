@@ -7,6 +7,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -25,7 +26,7 @@ import com.daniela.clinicasalud.ui.theme.*
 fun MisCitasScreen(
     onOpenDrawer: () -> Unit
 ) {
-    val appointments = LocalData.initialAppointments
+    val appointments = remember { LocalData.initialAppointments }
 
     Scaffold(
         topBar = {
@@ -60,14 +61,20 @@ fun MisCitasScreen(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            items(appointments) { appointment ->
+            items(
+                items = appointments,
+                key = { it.id }
+            ) { appointment ->
                 AppointmentCard(
                     appointment = appointment,
                     onCancelAppointment = { apptToCancel ->
-                        val index = LocalData.initialAppointments.indexOfFirst { it.id == apptToCancel.id }
+                        val index = appointments.indexOfFirst { it.id == apptToCancel.id }
                         if (index != -1) {
-                            LocalData.initialAppointments[index] = apptToCancel.copy(status = "Cancelada")
+                            appointments[index] = apptToCancel.copy(status = "Cancelada")
                         }
+                    },
+                    onDeleteAppointment = { apptToDelete ->
+                        appointments.remove(apptToDelete)
                     }
                 )
             }
@@ -78,12 +85,15 @@ fun MisCitasScreen(
 @Composable
 fun AppointmentCard(
     appointment: Appointment,
-    onCancelAppointment: (Appointment) -> Unit = {}
+    onCancelAppointment: (Appointment) -> Unit = {},
+    onDeleteAppointment: (Appointment) -> Unit = {}
 ) {
     var showCancelDialog by remember { mutableStateOf(false) }
 
     val isConfirmed = appointment.status == "Confirmada"
     val isCancelled = appointment.status == "Cancelada"
+    val isCompleted = appointment.status == "Completada"
+    val isRemovable = isCancelled || isCompleted
 
     val badgeBgColor = when {
         isConfirmed -> StatusGreenBg
@@ -222,6 +232,20 @@ fun AppointmentCard(
                                 text = "Cancelar cita",
                                 fontSize = 12.sp,
                                 fontWeight = FontWeight.SemiBold
+                            )
+                        }
+                    }
+
+                    // Botón de papelera para eliminar cita si está 'Cancelada' o 'Completada'
+                    if (isRemovable) {
+                        IconButton(
+                            onClick = { onDeleteAppointment(appointment) },
+                            modifier = Modifier.size(32.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Delete,
+                                contentDescription = "Eliminar cita",
+                                tint = Color(0xFFD32F2F)
                             )
                         }
                     }
