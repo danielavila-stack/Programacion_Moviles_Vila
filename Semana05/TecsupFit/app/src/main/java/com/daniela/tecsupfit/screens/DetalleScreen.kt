@@ -4,9 +4,11 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FitnessCenter
+import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -23,7 +25,8 @@ fun DetalleScreen(
     onVolver: () -> Unit,
     onReservar: (Int) -> Unit
 ) {
-    val clase = DatosMock.listaClases.find { it.id == claseId } ?: DatosMock.listaClases[0]
+    val clase = DatosMock.listaClases.find { it.id == claseId }
+    var esFavorito by remember { mutableStateOf(clase?.esFavorito ?: false) }
 
     Scaffold(
         topBar = {
@@ -32,6 +35,27 @@ fun DetalleScreen(
                 navigationIcon = {
                     IconButton(onClick = onVolver) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Volver")
+                    }
+                },
+                actions = {
+                    IconButton(
+                        onClick = {
+                            esFavorito = !esFavorito
+                            clase?.esFavorito = esFavorito
+                        }
+                    ) {
+                        if (esFavorito) {
+                            Icon(
+                                imageVector = Icons.Filled.Favorite,
+                                contentDescription = "Favorito",
+                                tint = Color.Red
+                            )
+                        } else {
+                            Icon(
+                                imageVector = Icons.Outlined.FavoriteBorder,
+                                contentDescription = "Favorito"
+                            )
+                        }
                     }
                 }
             )
@@ -68,27 +92,27 @@ fun DetalleScreen(
                 Spacer(modifier = Modifier.height(20.dp))
 
                 Text(
-                    text = clase.nombre,
+                    text = clase?.nombre ?: "",
                     fontSize = 22.sp,
                     fontWeight = FontWeight.Bold
                 )
 
                 Text(
-                    text = "${clase.hora} · ${clase.sala} · ${clase.duracion}",
+                    text = "${clase?.hora ?: ""} · ${clase?.sala ?: ""} · ${clase?.duracion ?: ""}",
                     color = Color.Gray,
                     fontSize = 14.sp,
                     modifier = Modifier.padding(top = 4.dp, bottom = 12.dp)
                 )
 
                 Text(
-                    text = clase.descripcion,
+                    text = clase?.descripcion ?: "",
                     fontSize = 14.sp,
                     color = Color.DarkGray,
                     modifier = Modifier.padding(bottom = 16.dp)
                 )
 
                 Text(
-                    text = "${clase.cuposDisponibles} de ${clase.cuposTotales} cupos disponibles",
+                    text = "${clase?.cuposDisponibles ?: 0} de ${clase?.cuposTotales ?: 12} cupos disponibles",
                     fontWeight = FontWeight.SemiBold,
                     color = TecsupPrimary,
                     fontSize = 14.sp
@@ -96,7 +120,9 @@ fun DetalleScreen(
             }
 
             Button(
-                onClick = { onReservar(clase.id) },
+                onClick = {
+                    clase?.let { onReservar(it.id) }
+                },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(50.dp),
