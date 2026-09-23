@@ -33,7 +33,7 @@ object LocalData {
         Doctor(
             id = 1,
             name = "Dra. Ana Torres",
-            specialty = "Cardióloga",
+            specialty = "Cardiología", // <-- Corregido para coincidir con el chip
             rating = 4.9,
             reviewsCount = 128,
             experienceYears = 12,
@@ -42,7 +42,7 @@ object LocalData {
         Doctor(
             id = 2,
             name = "Dr. Luis Vega",
-            specialty = "Pediatra",
+            specialty = "Pediatría", // <-- Corregido para coincidir con el chip
             rating = 4.7,
             reviewsCount = 95,
             experienceYears = 8,
@@ -51,7 +51,7 @@ object LocalData {
         Doctor(
             id = 3,
             name = "Dra. Rosa Díaz",
-            specialty = "Dermatóloga",
+            specialty = "Dermatología", // <-- Corregido para coincidir con el chip
             rating = 4.8,
             reviewsCount = 110,
             experienceYears = 10,
