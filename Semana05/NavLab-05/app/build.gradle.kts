@@ -4,11 +4,11 @@ plugins {
 }
 
 android {
-    namespace = "com.daniela.navlab05"
+    namespace = "com.daniela.navlab_05"
     compileSdk = 37
 
     defaultConfig {
-        applicationId = "com.daniela.navlab05"
+        applicationId = "com.daniela.navlab_05"
         minSdk = 24
         targetSdk = 36
         versionCode = 1
