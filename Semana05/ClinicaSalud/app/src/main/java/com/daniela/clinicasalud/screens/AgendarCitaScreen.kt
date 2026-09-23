@@ -1,9 +1,9 @@
 package com.daniela.clinicasalud.ui.screens
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -24,13 +24,14 @@ import com.daniela.clinicasalud.ui.theme.*
 fun AgendarCitaScreen(
     doctorId: Int,
     onBackClick: () -> Unit,
-    onConfirmClick: (doctorName: String, fecha: String, hora: String) -> Unit
+    onConfirmClick: (doctorName: String, fecha: String, hora: String) -> Unit,
+    onCancelClick: () -> Unit = onBackClick
 ) {
     val doctor = LocalData.doctors.find { it.id == doctorId } ?: LocalData.doctors.first()
 
     // Selección única de fecha y hora con remember (SIN ViewModel)
-    var selectedDateIndex by remember { mutableStateOf(1) } // "Vie 27" por defecto
-    var selectedTimeIndex by remember { mutableStateOf(1) } // "10:30" por defecto
+    var selectedDateIndex by remember { mutableIntStateOf(1) } // "Vie 27" por defecto
+    var selectedTimeIndex by remember { mutableIntStateOf(1) } // "10:30" por defecto
 
     Scaffold(
         topBar = {
@@ -113,10 +114,14 @@ fun AgendarCitaScreen(
 
             Button(
                 onClick = {
-                    val dateObj = LocalData.datesAvailable[selectedDateIndex]
-                    val dateFormatted = "${dateObj.dayOfWeek} ${dateObj.dayNumber}"
-                    val timeFormatted = LocalData.timesAvailable[selectedTimeIndex]
-                    onConfirmClick(doctor.name, dateFormatted, timeFormatted)
+                    if (selectedDateIndex in LocalData.datesAvailable.indices &&
+                        selectedTimeIndex in LocalData.timesAvailable.indices
+                    ) {
+                        val dateObj = LocalData.datesAvailable[selectedDateIndex]
+                        val dateFormatted = "${dateObj.dayOfWeek} ${dateObj.dayNumber}"
+                        val timeFormatted = LocalData.timesAvailable[selectedTimeIndex]
+                        onConfirmClick(doctor.name, dateFormatted, timeFormatted)
+                    }
                 },
                 modifier = Modifier
                     .fillMaxWidth()
@@ -131,6 +136,30 @@ fun AgendarCitaScreen(
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold,
                     color = Color.White
+                )
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            OutlinedButton(
+                onClick = {
+                    selectedDateIndex = -1
+                    selectedTimeIndex = -1
+                    onCancelClick()
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(50.dp),
+                colors = ButtonDefaults.outlinedButtonColors(
+                    contentColor = PurplePrimary
+                ),
+                border = BorderStroke(1.dp, PurplePrimary),
+                shape = RoundedCornerShape(12.dp)
+            ) {
+                Text(
+                    text = "Cancelar",
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold
                 )
             }
         }
