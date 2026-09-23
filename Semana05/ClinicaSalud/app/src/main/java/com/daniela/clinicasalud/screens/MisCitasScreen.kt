@@ -1,5 +1,6 @@
 package com.daniela.clinicasalud.ui.screens
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -9,6 +10,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
@@ -59,15 +61,84 @@ fun MisCitasScreen(
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             items(appointments) { appointment ->
-                AppointmentCard(appointment = appointment)
+                AppointmentCard(
+                    appointment = appointment,
+                    onCancelAppointment = { apptToCancel ->
+                        val index = LocalData.initialAppointments.indexOfFirst { it.id == apptToCancel.id }
+                        if (index != -1) {
+                            LocalData.initialAppointments[index] = apptToCancel.copy(status = "Cancelada")
+                        }
+                    }
+                )
             }
         }
     }
 }
 
 @Composable
-fun AppointmentCard(appointment: Appointment) {
+fun AppointmentCard(
+    appointment: Appointment,
+    onCancelAppointment: (Appointment) -> Unit = {}
+) {
+    var showCancelDialog by remember { mutableStateOf(false) }
+
     val isConfirmed = appointment.status == "Confirmada"
+    val isCancelled = appointment.status == "Cancelada"
+
+    val badgeBgColor = when {
+        isConfirmed -> StatusGreenBg
+        isCancelled -> Color(0xFFFFEBEE)
+        else -> PurpleChipUnselected
+    }
+
+    val badgeTextColor = when {
+        isConfirmed -> StatusGreen
+        isCancelled -> Color(0xFFD32F2F)
+        else -> TextGray
+    }
+
+    if (showCancelDialog) {
+        AlertDialog(
+            onDismissRequest = { showCancelDialog = false },
+            title = {
+                Text(
+                    text = "Cancelar cita",
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 18.sp
+                )
+            },
+            text = {
+                Text(
+                    text = "¿Estás seguro de que deseas cancelar tu cita con ${appointment.doctorName}?",
+                    fontSize = 14.sp
+                )
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        onCancelAppointment(appointment)
+                        showCancelDialog = false
+                    }
+                ) {
+                    Text(
+                        text = "Sí, cancelar",
+                        color = Color(0xFFD32F2F),
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = { showCancelDialog = false }
+                ) {
+                    Text(
+                        text = "Cancelar",
+                        color = TextGray
+                    )
+                }
+            }
+        )
+    }
 
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -80,12 +151,18 @@ fun AppointmentCard(appointment: Appointment) {
                 .fillMaxWidth()
                 .height(IntrinsicSize.Min)
         ) {
-            // Indicador vertical izquierdo morado si está confirmada
+            // Indicador vertical izquierdo
             Box(
                 modifier = Modifier
                     .width(6.dp)
                     .fillMaxHeight()
-                    .background(if (isConfirmed) PurplePrimary else Color.Transparent)
+                    .background(
+                        when {
+                            isConfirmed -> PurplePrimary
+                            isCancelled -> Color(0xFFD32F2F)
+                            else -> Color.Transparent
+                        }
+                    )
             )
 
             Column(
@@ -110,18 +187,44 @@ fun AppointmentCard(appointment: Appointment) {
 
                 Spacer(modifier = Modifier.height(8.dp))
 
-                // Badge de estado (Confirmada / Completada)
-                Surface(
-                    color = if (isConfirmed) StatusGreenBg else PurpleChipUnselected,
-                    shape = RoundedCornerShape(12.dp)
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(
-                        text = appointment.status,
-                        color = if (isConfirmed) StatusGreen else TextGray,
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Medium,
-                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp)
-                    )
+                    // Badge de estado (Confirmada / Cancelada / Completada)
+                    Surface(
+                        color = badgeBgColor,
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Text(
+                            text = appointment.status,
+                            color = badgeTextColor,
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Medium,
+                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp)
+                        )
+                    }
+
+                    // Botón 'Cancelar cita' solo si está 'Confirmada'
+                    if (isConfirmed) {
+                        OutlinedButton(
+                            onClick = { showCancelDialog = true },
+                            border = BorderStroke(1.dp, Color(0xFFD32F2F)),
+                            shape = RoundedCornerShape(8.dp),
+                            contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp),
+                            modifier = Modifier.height(32.dp),
+                            colors = ButtonDefaults.outlinedButtonColors(
+                                contentColor = Color(0xFFD32F2F)
+                            )
+                        ) {
+                            Text(
+                                text = "Cancelar cita",
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.SemiBold
+                            )
+                        }
+                    }
                 }
             }
         }

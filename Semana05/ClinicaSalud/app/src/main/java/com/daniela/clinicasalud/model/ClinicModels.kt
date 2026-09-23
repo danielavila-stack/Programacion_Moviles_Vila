@@ -1,5 +1,7 @@
 package com.daniela.clinicasalud.model
 
+import androidx.compose.runtime.mutableStateListOf
+
 // Modelo de datos para los médicos
 data class Doctor(
     val id: Int,
@@ -22,7 +24,7 @@ data class Appointment(
     val id: Int,
     val doctorName: String,
     val dateInfo: String,
-    val status: String // "Confirmada" o "Completada"
+    val status: String // "Confirmada", "Completada" o "Cancelada"
 )
 
 // Datos iniciales para alimentar las vistas
@@ -67,7 +69,7 @@ object LocalData {
 
     val timesAvailable = listOf("9:00", "10:30", "3:00")
 
-    val initialAppointments = mutableListOf(
+    val initialAppointments = mutableStateListOf(
         Appointment(1, "Dra. Ana Torres", "Viernes 27, 10:30 am", "Confirmada"),
         Appointment(2, "Dr. Luis Vega", "Miércoles 15, 3:00 pm", "Completada")
     )
