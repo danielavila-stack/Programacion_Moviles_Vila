@@ -4,11 +4,17 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ExitToApp
+import androidx.compose.material.icons.filled.ChevronRight
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -62,8 +68,9 @@ fun PerfilScreen() {
                 color = Color.Gray
             )
 
-            Spacer(modifier = Modifier.height(28.dp))
+            Spacer(modifier = Modifier.height(24.dp))
 
+            // Estadísticas
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
@@ -71,7 +78,8 @@ fun PerfilScreen() {
                 Card(
                     modifier = Modifier.weight(1f),
                     shape = RoundedCornerShape(12.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color.White)
+                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
                 ) {
                     Column(
                         modifier = Modifier
@@ -79,7 +87,7 @@ fun PerfilScreen() {
                             .fillMaxWidth(),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        Text("14", fontWeight = FontWeight.Bold, fontSize = 20.sp)
+                        Text("14", fontWeight = FontWeight.Bold, fontSize = 20.sp, color = TecsupPrimary)
                         Text("Clases", fontSize = 12.sp, color = Color.Gray)
                     }
                 }
@@ -87,7 +95,8 @@ fun PerfilScreen() {
                 Card(
                     modifier = Modifier.weight(1f),
                     shape = RoundedCornerShape(12.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color.White)
+                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
                 ) {
                     Column(
                         modifier = Modifier
@@ -95,11 +104,65 @@ fun PerfilScreen() {
                             .fillMaxWidth(),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        Text("3", fontWeight = FontWeight.Bold, fontSize = 20.sp)
+                        Text("3", fontWeight = FontWeight.Bold, fontSize = 20.sp, color = TecsupPrimary)
                         Text("Rachas", fontSize = 12.sp, color = Color.Gray)
                     }
                 }
             }
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // Opciones de cuenta
+            Card(
+                shape = RoundedCornerShape(12.dp),
+                colors = CardDefaults.cardColors(containerColor = Color.White),
+                elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+            ) {
+                Column {
+                    OpciónPerfilItem(icon = Icons.Default.Person, titulo = "Editar perfil")
+                    Divider(color = Color(0xFFEEEEEE))
+                    OpciónPerfilItem(icon = Icons.Default.Star, titulo = "Mi membresía")
+                    Divider(color = Color(0xFFEEEEEE))
+                    OpciónPerfilItem(icon = Icons.AutoMirrored.Filled.ExitToApp, titulo = "Cerrar sesión", esDestructivo = true)
+                }
+            }
         }
+    }
+}
+
+@Composable
+private fun OpciónPerfilItem(
+    icon: ImageVector,
+    titulo: String,
+    esDestructivo: Boolean = false
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 14.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = if (esDestructivo) Color.Red else TecsupPrimary,
+                modifier = Modifier.size(20.dp)
+            )
+            Spacer(modifier = Modifier.width(12.dp))
+            Text(
+                text = titulo,
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Medium,
+                color = if (esDestructivo) Color.Red else Color.Black
+            )
+        }
+        Icon(
+            imageVector = Icons.Default.ChevronRight,
+            contentDescription = null,
+            tint = Color.LightGray,
+            modifier = Modifier.size(20.dp)
+        )
     }
 }

@@ -23,17 +23,26 @@ import com.daniela.tecsupfit.ui.theme.TecsupPrimary
 fun InicioScreen(onClaseClick: (Int) -> Unit) {
     var filtroSeleccionado by remember { mutableStateOf("Hoy") }
 
+    // Filtrar clases dinámicamente según el chip seleccionado
+    val clasesFiltradas = remember(filtroSeleccionado) {
+        if (filtroSeleccionado == "Hoy") {
+            DatosMock.listaClases.take(2)
+        } else {
+            DatosMock.listaClases
+        }
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(Color(0xFFF8F9FA))
     ) {
-        // Encabezado principal verde
+        // Encabezado verde característico
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .background(TecsupPrimary)
-                .padding(20.dp)
+                .padding(horizontal = 20.dp, vertical = 24.dp)
         ) {
             Column {
                 Text(
@@ -42,15 +51,17 @@ fun InicioScreen(onClaseClick: (Int) -> Unit) {
                     fontSize = 22.sp,
                     fontWeight = FontWeight.Bold
                 )
+                Spacer(modifier = Modifier.height(4.dp))
                 Text(
                     text = "Hola, Daniela",
                     color = Color.White.copy(alpha = 0.9f),
-                    fontSize = 14.sp
+                    fontSize = 15.sp
                 )
             }
         }
 
         Column(modifier = Modifier.padding(16.dp)) {
+            // Chips de filtrado
             Row(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 modifier = Modifier.padding(bottom = 16.dp)
@@ -63,7 +74,8 @@ fun InicioScreen(onClaseClick: (Int) -> Unit) {
                         selectedContainerColor = TecsupPrimary,
                         selectedLabelColor = Color.White,
                         containerColor = Color.White
-                    )
+                    ),
+                    shape = RoundedCornerShape(20.dp)
                 )
                 FilterChip(
                     selected = filtroSeleccionado == "Esta semana",
@@ -73,7 +85,8 @@ fun InicioScreen(onClaseClick: (Int) -> Unit) {
                         selectedContainerColor = TecsupPrimary,
                         selectedLabelColor = Color.White,
                         containerColor = Color.White
-                    )
+                    ),
+                    shape = RoundedCornerShape(20.dp)
                 )
             }
 
@@ -81,14 +94,16 @@ fun InicioScreen(onClaseClick: (Int) -> Unit) {
                 text = "Clases disponibles",
                 fontWeight = FontWeight.Bold,
                 fontSize = 18.sp,
+                color = Color.Black,
                 modifier = Modifier.padding(bottom = 12.dp)
             )
 
             LazyColumn(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                items(DatosMock.listaClases) { clase ->
+                items(clasesFiltradas) { clase ->
                     Card(
-                        shape = RoundedCornerShape(12.dp),
+                        shape = RoundedCornerShape(14.dp),
                         colors = CardDefaults.cardColors(containerColor = Color.White),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
                         modifier = Modifier
                             .fillMaxWidth()
                             .clickable { onClaseClick(clase.id) }
@@ -98,7 +113,7 @@ fun InicioScreen(onClaseClick: (Int) -> Unit) {
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Surface(
-                                shape = RoundedCornerShape(8.dp),
+                                shape = RoundedCornerShape(10.dp),
                                 color = Color(0xFFE8F5E9),
                                 modifier = Modifier.size(48.dp)
                             ) {
@@ -115,8 +130,10 @@ fun InicioScreen(onClaseClick: (Int) -> Unit) {
                                 Text(
                                     text = clase.nombre,
                                     fontWeight = FontWeight.Bold,
-                                    fontSize = 16.sp
+                                    fontSize = 16.sp,
+                                    color = Color.Black
                                 )
+                                Spacer(modifier = Modifier.height(2.dp))
                                 Text(
                                     text = "${clase.hora} · ${clase.sala}",
                                     color = Color.Gray,
