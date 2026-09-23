@@ -1,8 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
+<<<<<<< Updated upstream
 <<<<<<< HEAD
   <component name="GradleMigrationSettings" migrationVersion="1" />
 =======
+=======
+  <component name="GradleMigrationSettings" migrationVersion="1" />
+>>>>>>> Stashed changes
   <component name="GradleSettings">
     <option name="linkedExternalProjectsSettings">
       <GradleProjectSettings>
