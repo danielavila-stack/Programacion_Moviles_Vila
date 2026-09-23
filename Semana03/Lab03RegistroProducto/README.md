@@ -1,31 +1,41 @@
-# Registro de Productos - Lab 03
+# Laboratorio 03 — Registro de Producto (Jetpack Compose)
 
-**Estudiante:** Vila Ramos Daniela  
+**Estudiante:** Daniela Vila Ramos  
 **Curso:** Desarrollo de Aplicaciones Móviles  
-
-## Parte B: Mejora con IA (Rama `con-IA`)
-
-En esta sección se detallan las iteraciones realizadas con **Gemini** para incorporar las validaciones de campos vacíos y la funcionalidad de limpieza de formulario, diferenciando el código generado automáticamente de las refactorizaciones manuales aplicadas sobre `MainActivity.kt` para cumplir con las reglas de diseño Material 3 de Jetpack Compose.
+**Docente:** Juan José León Suiyon  
 
 ---
 
-### Tabla de Prompts y Decisiones
-
-| Prompt utilizado | Generación de Gemini | Correcciones y Ajustes Manuales (Commit B2) |
-| :--- | :--- | :--- |
-| **Prompt 1: Validaciones y Control de Estado**<br> *"Ayúdame a agregar validaciones a los campos vacíos en el formulario de registro y añade un botón Limpiar para borrar los datos ingresados."*[cite: 1] | Generó los estados `mensajeError` y `mostrarResumen`, la condición `isBlank()` al presionar el botón de acción y la estructura básica del botón **LIMPIAR**. | **Integración parcial:** Se aprovechó la lógica de reseteo de variables (`nombre = ""`, `precio = ""`, `cantidad = ""`), pero el mensaje de error usaba un color estático genérico y el botón principal mantenía la etiqueta predeterminada `"AGREGAR"` |
-| **Prompt 2: Refinamiento de UI, UX y Formatos**<br> *"Ajusta el texto del botón de acción a AGREGAR PRODUCTO, mejora el estilo del mensaje de error usando el color de tema y asegura el correcto formato numérico."*[cite: 1] | Renombró la etiqueta del botón a `"AGREGAR PRODUCTO"` y sugirió el uso de `MaterialTheme.colorScheme.error` para adaptar las alertas visuales. | **Aprobado y refactorizado (Commit B2):** En `MainActivity.kt` se consolidó la distribución de los botones en una `Row` compartida con `Modifier.weight(1f)`. Se forzó el uso de `Locale.US` en `String.format("%.2f", ...)` para garantizar que el cálculo del `importe` use punto decimal en la `Card`, y se aseguró que el mensaje de confirmación utilice `Color(0xFF2E7D32)` |
+##  Descripción del Proyecto
+Aplicación desarrollada en Android Studio con Jetpack Compose que permite ingresar los datos de un producto (nombre, precio y cantidad) y visualizarlos en una tarjeta de resumen con el importe total calculado.
 
 ---
 
-### Captura de la Mejora con IA
-<img width="366" height="721" alt="parte 2" src="https://github.com/user-attachments/assets/7d9fc0cd-92c8-4aec-b15e-a84737fcae40" />
+## Capturas de Pantalla
 
+### 1. Pantalla Inicial (Vacía)
+<img width="382" height="787" alt="image" src="https://github.com/user-attachments/assets/995cc080-23c8-4504-b7e1-1f869b8f7879" />
+
+### 2. Producto Registrado
+<img width="372" height="637" alt="image" src="https://github.com/user-attachments/assets/75cd241b-8200-4435-94bf-e5d46ad437d9" />
 
 ---
 
-### Historial de Commits - Rama `con-IA`
+## Pregunta de Reflexión
 
-* **`B1`**: *Aplica mejora generada con IA: validacion y boton limpiar*
-* **`B2`**: *Corrige codigo de la IA: ajusta labels, colores M3 y formato Locale.US*
-* **`B3`**: *Documenta prompts y decisiones en README*
+> **¿Qué pasaría si declaras las variables de los campos SIN `remember`?**
+
+Si se declaran las variables sin la función `remember`, los valores introducidos se reinician al valor inicial en cada proceso de recomposición (*recomposition*) de la pantalla. Esto provoca que, al escribir cualquier letra o interactuar con la interfaz, el texto introducido en los campos de entrada se borre automáticamente y no se conserve el estado del formulario.
+
+---
+
+## Historial de Commits
+
+1. `Estructura inicial del proyecto`
+2. `Agrega encabezado con jerarquia tipografica`
+3. `Agrega campos de ingreso con estado`
+4. `Agrega boton de accion y card de resumen`
+5. `Aplica reglas de diseno y mensaje de confirmacion`
+6. `Agrega README con capturas y respuesta sobre remember`
+
+

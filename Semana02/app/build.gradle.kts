@@ -5,7 +5,11 @@ plugins {
 
 android {
     namespace = "com.daniela.lab02carritokotlin"
-    compileSdk = 37
+    compileSdk {
+        version = release(36) {
+            minorApiLevel = 1
+        }
+    }
 
     defaultConfig {
         applicationId = "com.daniela.lab02carritokotlin"
