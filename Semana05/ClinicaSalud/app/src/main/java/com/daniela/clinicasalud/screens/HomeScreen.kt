@@ -51,7 +51,7 @@ fun HomeScreen(
                             fontWeight = FontWeight.Bold
                         )
                         Text(
-                            text = "Hola, Juan",
+                            text = "Hola, Daniela",
                             color = Color.White.copy(alpha = 0.8f),
                             fontSize = 13.sp
                         )

@@ -68,7 +68,7 @@ fun MainApp() {
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
-                            text = "JP",
+                            text = "DV",
                             fontWeight = FontWeight.Bold,
                             color = PurplePrimary,
                             fontSize = 18.sp
@@ -78,7 +78,7 @@ fun MainApp() {
                     Spacer(modifier = Modifier.height(12.dp))
 
                     Text(
-                        text = "Juan Pérez",
+                        text = "Daniela Vila",
                         fontWeight = FontWeight.Bold,
                         fontSize = 16.sp,
                         color = TextDark
