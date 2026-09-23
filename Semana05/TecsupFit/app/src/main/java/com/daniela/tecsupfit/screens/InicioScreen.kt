@@ -8,6 +8,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.FitnessCenter
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -22,13 +23,18 @@ import com.daniela.tecsupfit.ui.theme.TecsupPrimary
 @Composable
 fun InicioScreen(onClaseClick: (Int) -> Unit) {
     var filtroSeleccionado by remember { mutableStateOf("Hoy") }
+    var searchQuery by remember { mutableStateOf("") }
 
-    // Filtrar clases dinámicamente según el chip seleccionado
-    val clasesFiltradas = remember(filtroSeleccionado) {
-        if (filtroSeleccionado == "Hoy") {
+    // Filtrar clases dinámicamente según el chip seleccionado y la búsqueda realizada
+    val clasesFiltradas = remember(filtroSeleccionado, searchQuery) {
+        val baseList = if (filtroSeleccionado == "Hoy") {
             DatosMock.listaClases.take(2)
         } else {
             DatosMock.listaClases
+        }
+        baseList.filter { clase ->
+            clase.nombre.contains(searchQuery, ignoreCase = true) ||
+                    clase.sala.contains(searchQuery, ignoreCase = true)
         }
     }
 
@@ -61,6 +67,28 @@ fun InicioScreen(onClaseClick: (Int) -> Unit) {
         }
 
         Column(modifier = Modifier.padding(16.dp)) {
+            // Barra de búsqueda por nombre de clase o sala
+            OutlinedTextField(
+                value = searchQuery,
+                onValueChange = { searchQuery = it },
+                placeholder = { Text("Buscar por clase o sala...") },
+                leadingIcon = {
+                    Icon(
+                        imageVector = Icons.Default.Search,
+                        contentDescription = "Buscar"
+                    )
+                },
+                singleLine = true,
+                shape = RoundedCornerShape(12.dp),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = TecsupPrimary,
+                    focusedLabelColor = TecsupPrimary
+                ),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 16.dp)
+            )
+
             // Chips de filtrado
             Row(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),

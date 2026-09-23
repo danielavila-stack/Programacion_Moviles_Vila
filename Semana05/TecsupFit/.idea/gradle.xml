@@ -1,12 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
-<<<<<<< Updated upstream
-<<<<<<< HEAD
-  <component name="GradleMigrationSettings" migrationVersion="1" />
-=======
-=======
-  <component name="GradleMigrationSettings" migrationVersion="1" />
->>>>>>> Stashed changes
   <component name="GradleSettings">
     <option name="linkedExternalProjectsSettings">
       <GradleProjectSettings>
@@ -21,5 +14,4 @@
       </GradleProjectSettings>
     </option>
   </component>
->>>>>>> 0d63bc0 (Inicializar estructura base y contenedor principal)
 </project>
