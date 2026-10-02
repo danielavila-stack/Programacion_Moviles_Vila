@@ -1,5 +1,6 @@
 package com.vila.daniela.tecsupstore.screens
 
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
@@ -18,7 +19,7 @@ fun AppNavegacion() {
     var destinoActual by remember { mutableStateOf("inicio") }
 
     val productos = listOf(
-        Producto(1, "Audífonos Bluetooth", "89.00"),
+        Producto(1, "Audifonos Bluetooth", "89.00"),
         Producto(2, "Smartwatch Deportivo", "199.00"),
         Producto(3, "Funda de Celular", "25.00"),
         Producto(4, "Cargador Carga Rápida", "45.00")
@@ -39,12 +40,28 @@ fun AppNavegacion() {
         Scaffold(
             topBar = {
                 TopAppBar(
-                    title = { Text("TECSUP Store") },
+                    title = {
+                        Column {
+                            Text("TECSUP Store", color = MaterialTheme.colorScheme.onPrimary)
+                            Text(
+                                "Mas vendidos",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.8f)
+                            )
+                        }
+                    },
                     navigationIcon = {
                         IconButton(onClick = { scope.launch { drawerState.open() } }) {
-                            Icon(Icons.Default.Menu, contentDescription = "Menú")
+                            Icon(
+                                imageVector = Icons.Default.Menu,
+                                contentDescription = "Menú",
+                                tint = MaterialTheme.colorScheme.onPrimary
+                            )
                         }
-                    }
+                    },
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = MaterialTheme.colorScheme.primary
+                    )
                 )
             }
         ) { paddingValues ->
