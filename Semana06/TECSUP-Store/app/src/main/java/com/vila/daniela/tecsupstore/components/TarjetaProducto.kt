@@ -3,6 +3,7 @@ package com.vila.daniela.tecsupstore.components
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Report
 import androidx.compose.material.icons.filled.Share
@@ -17,6 +18,7 @@ import com.vila.daniela.tecsupstore.model.Producto
 @Composable
 fun TarjetaProducto(
     producto: Producto,
+    esFavorito: Boolean = false,
     onFavoritoClick: () -> Unit = {}
 ) {
     var expanded by remember { mutableStateOf(false) }
@@ -60,8 +62,14 @@ fun TarjetaProducto(
                     onDismissRequest = { expanded = false }
                 ) {
                     DropdownMenuItem(
-                        text = { Text("Favoritos") },
-                        leadingIcon = { Icon(Icons.Default.Favorite, contentDescription = null) },
+                        text = { Text(if (esFavorito) "Quitar de favoritos" else "Favoritos") },
+                        leadingIcon = {
+                            Icon(
+                                imageVector = if (esFavorito) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                                contentDescription = null,
+                                tint = if (esFavorito) MaterialTheme.colorScheme.primary else LocalContentColor.current
+                            )
+                        },
                         onClick = {
                             onFavoritoClick()
                             expanded = false

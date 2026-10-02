@@ -15,6 +15,7 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun AppDrawer(
     destinoActual: String,
+    cantidadFavoritos: Int = 0,
     onNavegar: (String) -> Unit
 ) {
     ModalDrawerSheet {
@@ -70,6 +71,16 @@ fun AppDrawer(
             label = { Text("Favoritos") },
             selected = destinoActual == "favoritos",
             icon = { Icon(Icons.Default.Favorite, contentDescription = null) },
+            badge = {
+                if (cantidadFavoritos > 0) {
+                    Badge(
+                        containerColor = MaterialTheme.colorScheme.primary,
+                        contentColor = MaterialTheme.colorScheme.onPrimary
+                    ) {
+                        Text(text = cantidadFavoritos.toString())
+                    }
+                }
+            },
             onClick = { onNavegar("favoritos") },
             modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
         )

@@ -8,11 +8,17 @@ import com.vila.daniela.tecsupstore.model.Producto
 
 @Composable
 fun HomeScreen(
-    productos: List<Producto>
+    productos: List<Producto>,
+    favoritosIds: List<Int> = emptyList(),
+    onToggleFavorito: (Int) -> Unit = {}
 ) {
     LazyColumn {
         items(productos) { producto ->
-            TarjetaProducto(producto = producto)
+            TarjetaProducto(
+                producto = producto,
+                esFavorito = favoritosIds.contains(producto.id),
+                onFavoritoClick = { onToggleFavorito(producto.id) }
+            )
         }
     }
 }

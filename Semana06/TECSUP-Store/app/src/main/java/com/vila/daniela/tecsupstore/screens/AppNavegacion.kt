@@ -18,6 +18,9 @@ fun AppNavegacion() {
     val scope = rememberCoroutineScope()
     var destinoActual by remember { mutableStateOf("inicio") }
 
+    // Lista interactiva para registrar los productos marcados como favoritos
+    val favoritosIds = remember { mutableStateListOf<Int>() }
+
     val productos = listOf(
         Producto(1, "Audifonos Bluetooth", "89.00"),
         Producto(2, "Smartwatch Deportivo", "199.00"),
@@ -30,6 +33,7 @@ fun AppNavegacion() {
         drawerContent = {
             AppDrawer(
                 destinoActual = destinoActual,
+                cantidadFavoritos = favoritosIds.size,
                 onNavegar = { destino ->
                     destinoActual = destino
                     scope.launch { drawerState.close() }
@@ -66,7 +70,17 @@ fun AppNavegacion() {
             }
         ) { paddingValues ->
             Surface(modifier = Modifier.padding(paddingValues)) {
-                HomeScreen(productos = productos)
+                HomeScreen(
+                    productos = productos,
+                    favoritosIds = favoritosIds,
+                    onToggleFavorito = { id ->
+                        if (favoritosIds.contains(id)) {
+                            favoritosIds.remove(id)
+                        } else {
+                            favoritosIds.add(id)
+                        }
+                    }
+                )
             }
         }
     }
