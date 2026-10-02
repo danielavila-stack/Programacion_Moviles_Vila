@@ -12,7 +12,8 @@ import com.vila.daniela.tecsupstore.model.Producto
 
 @Composable
 fun TarjetaProducto(
-    producto: Producto
+    producto: Producto,
+    onFavoritoClick: () -> Unit = {}
 ) {
     var expanded by remember { mutableStateOf(false) }
 
@@ -38,6 +39,27 @@ fun TarjetaProducto(
                     Icon(
                         imageVector = Icons.Default.MoreVert,
                         contentDescription = "Opciones"
+                    )
+                }
+
+                DropdownMenu(
+                    expanded = expanded,
+                    onDismissRequest = { expanded = false }
+                ) {
+                    DropdownMenuItem(
+                        text = { Text("Favoritos") },
+                        onClick = {
+                            onFavoritoClick()
+                            expanded = false
+                        }
+                    )
+                    DropdownMenuItem(
+                        text = { Text("Compartir") },
+                        onClick = { expanded = false }
+                    )
+                    DropdownMenuItem(
+                        text = { Text("Reportar") },
+                        onClick = { expanded = false }
                     )
                 }
             }
