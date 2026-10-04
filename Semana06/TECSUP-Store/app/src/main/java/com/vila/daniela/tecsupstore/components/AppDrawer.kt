@@ -72,10 +72,11 @@ fun AppDrawer(
             selected = destinoActual == "favoritos",
             icon = { Icon(Icons.Default.Favorite, contentDescription = null) },
             badge = {
+                // Mejora visual: Badge en morado solo si hay al menos 1 favorito seleccionado
                 if (cantidadFavoritos > 0) {
                     Badge(
-                        containerColor = MaterialTheme.colorScheme.primary,
-                        contentColor = MaterialTheme.colorScheme.onPrimary
+                        containerColor = MaterialTheme.colorScheme.primary, // Color morado (#6750A4)
+                        contentColor = MaterialTheme.colorScheme.onPrimary   // Texto blanco para contraste
                     ) {
                         Text(text = cantidadFavoritos.toString())
                     }
