@@ -2,7 +2,7 @@
 
 **Estudiante:** Daniela  
 **Curso:** Programación en Móviles  
-**Docente:** Juan León Suiyon  
+**Docente:** Juan León Suiyon
 
 ---
 
@@ -30,4 +30,6 @@ Este programa implementa un sistema interactivo de carrito de compras en consola
 
 ## Captura de Pantalla de Ejecución
 
-<img width="705" height="722" alt="image" src="https://github.com/user-attachments/assets/d4eda965-2f02-4389-a49e-8b99f8a4714b" />
+| Detalle de Productos y Carrito | Resultados y Cálculos Finales |
+| :---: | :---: |
+| <img src="https://github.com/user-attachments/assets/59575232-379f-4670-a680-ecb551a5a75f" width="380" alt="Ejecución Parte 1" /> | <img src="https://github.com/user-attachments/assets/abc183a7-dc13-409c-8102-aad41962006e" width="380" alt="Ejecución Parte 2" /> |
