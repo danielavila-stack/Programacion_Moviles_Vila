@@ -1,6 +1,6 @@
-# TecsupFit — Programación en Móviles (Rama `sin-ia`)
+# TecsupFit — Programación en Móviles (Rama `con-ia`)
 
-Aplicación móvil desarrollada de forma nativa para Android utilizando **Kotlin** y **Jetpack Compose** para la reserva y gestión de clases de gimnasio (Fase 1).
+Aplicación móvil desarrollada de forma nativa para Android utilizando **Kotlin** y **Jetpack Compose** para la reserva y gestión de clases de gimnasio (Fase 2).
 
 ## Estructura del proyecto
 
@@ -13,6 +13,17 @@ app/src/main/java/com/daniela/tecsupfit/
 ├── screens/         → InicioScreen, DetalleScreen, ReservarScreen, ConfirmacionScreen, ReservasScreen, RutinasScreen, PerfilScreen, BottomBar
 └── ui/theme/        → Temas, colores y tipografías TecsupFit
 ```
+# Prompts Utilizados con Gemini AI
+En este Fase 2 se utilizo 3 prompts de acuerdo a lo que se necesitaba agregar a este codigo base.
+### Prompt 1
+>"En la pantalla InicioScreen.kt de mi proyecto Jetpack Compose, agrega una barra de búsqueda en la parte superior utilizando OutlinedTextField con un ícono de lupa (Icons.Default.Search). Crea una variable de estado searchQuery para capturar el texto ingresado por el usuario y filtra en tiempo real la lista de clases (DatosMock.listaClases) de modo que coincida con el nombre de la clase (clase.nombre) o la sala (clase.sala), ignorando mayúsculas y minúsculas."
+
+### Prompt 2
+>En DetalleScreen.kt, añade un estado mutable para gestionar si la clase es favorita usando var esFavorito by remember { mutableStateOf(clase?.esFavorito ?: false) }. Agrega un IconButton dentro de las actions de la TopAppBar. Si esFavorito es true, muestra Icons.Filled.Favorite de color Color.Red. Si es false, muestra Icons.Outlined.FavoriteBorder. Al hacer clic, alterna el valor de esFavorito y actualiza la propiedad clase?.esFavorito = esFavorito. Usa los atributos existentes de mi modelo (nombre, hora, sala, duracion, cuposDisponibles, descripcion).
+### Prompt 3
+>"En RutinasScreen.kt, implementa un sistema de filtrado por nivel de dificultad utilizando fichas de selección (FilterChip). Crea una fila horizontal con las opciones (Todos, Principiante, Intermedio, Avanzado). Mantén la opción seleccionada en una variable de estado y filtra en tiempo real la lista de rutinas (DatosMock.listaRutinas) según el nivel seleccionado. Si la opción es Todos, muestra la lista completa."
+
+
 ## Requerimientos Funcionales
 
 | RF | Descripción | Archivo | Cómo verificarlo |
@@ -29,10 +40,6 @@ app/src/main/java/com/daniela/tecsupfit/
 
 ## Capturas de Pantalla
 
-| Pantalla Inicio | Detalle de Clase | Reservar Cupo | Confirmación |
+| Pantalla Inicio (buscamos las clases) | Detalle de Clase | Rutinas de Entrenamiento (como Principiante) | Rutinas de Entrenamiento (Intermedio) |
 | :---: | :---: | :---: | :---: |
-| <img src="https://github.com/user-attachments/assets/dd485b4e-36ac-4917-99a1-08e8866826df" width="250" /> | <img src="https://github.com/user-attachments/assets/795b57d6-48f6-4ab2-a136-22913a7617f8" width="250" /> | <img src="https://github.com/user-attachments/assets/def08ebf-bc22-42da-840a-bc51949dc53e" width="250" /> | <img src="https://github.com/user-attachments/assets/c1f29fc2-abe9-47f1-958e-0d652968999c" width="250" /> |
-
-| Reservas | Rutinas | Perfil |
-| :---: | :---: | :---: |
-| <img src="https://github.com/user-attachments/assets/e3b7e518-1013-45d5-8816-f9025db58790" width="250" /> | <img src="https://github.com/user-attachments/assets/f94fe8e6-518a-447b-b840-dcfc7f718d1b" width="250" /> | <img src="https://github.com/user-attachments/assets/3ace5236-b266-4288-9f63-d69b61db4268" width="250" /> |
+| <img src="https://github.com/user-attachments/assets/97f2b962-0789-48f9-8dc4-9c5854d9ace9" width="220" height="460" alt="Pantalla Inicio (buscamos las clases)" /> | <img src="https://github.com/user-attachments/assets/0a4c66f8-e424-4612-b797-94e246511a80" width="220" height="460" alt="Detalle de Clase" /> | <img src="https://github.com/user-attachments/assets/c899e323-c642-4a2b-9b9d-abe78c3a71e0" width="220" height="460" alt="Rutinas de Entrenamiento (como Principiante)" /> | <img src="https://github.com/user-attachments/assets/dee375d6-d4d1-48ec-bf1b-b0471b6ce325" width="220" height="460" alt="Rutinas de Entrenamiento (Intermedio)" /> |
