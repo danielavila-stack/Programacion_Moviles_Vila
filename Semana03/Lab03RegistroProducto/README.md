@@ -1,41 +1,22 @@
-# Laboratorio 03 — Registro de Producto (Jetpack Compose)
+# Laboratorio 03: Registro de Producto
 
-**Estudiante:** Daniela Vila Ramos  
-**Curso:** Desarrollo de Aplicaciones Móviles  
-**Docente:** Juan José León Suiyon  
+**Estudiante:** Daniela Vila  
+**Curso:** Programación en Móviles
 
----
-
-##  Descripción del Proyecto
-Aplicación desarrollada en Android Studio con Jetpack Compose que permite ingresar los datos de un producto (nombre, precio y cantidad) y visualizarlos en una tarjeta de resumen con el importe total calculado.
-
----
+## Descripción
+Aplicación móvil desarrollada en Android Studio utilizando **Jetpack Compose** para el registro interactivo de productos. La interfaz permite ingresar el nombre del producto, su precio unitario y la cantidad, realizando el cálculo automático del importe total. Incluye validación de datos en tiempo real para evitar campos vacíos o valores no numéricos, desplegando un mensaje de error o una tarjeta de resumen según corresponda.
 
 ## Capturas de Pantalla
 
-### 1. Pantalla Inicial (Vacía)
-<img width="382" height="787" alt="image" src="https://github.com/user-attachments/assets/995cc080-23c8-4504-b7e1-1f869b8f7879" />
+### Parte B: Mejora con IA (Validación y Botón Limpiar)
 
-### 2. Producto Registrado
-<img width="372" height="637" alt="image" src="https://github.com/user-attachments/assets/75cd241b-8200-4435-94bf-e5d46ad437d9" />
-
----
-
-## Pregunta de Reflexión
-
-> **¿Qué pasaría si declaras las variables de los campos SIN `remember`?**
-
-Si se declaran las variables sin la función `remember`, los valores introducidos se reinician al valor inicial en cada proceso de recomposición (*recomposition*) de la pantalla. Esto provoca que, al escribir cualquier letra o interactuar con la interfaz, el texto introducido en los campos de entrada se borre automáticamente y no se conserve el estado del formulario.
-
----
-
-## Historial de Commits
-
-1. `Estructura inicial del proyecto`
-2. `Agrega encabezado con jerarquia tipografica`
-3. `Agrega campos de ingreso con estado`
-4. `Agrega boton de accion y card de resumen`
-5. `Aplica reglas de diseno y mensaje de confirmacion`
-6. `Agrega README con capturas y respuesta sobre remember`
+| Registro Exitoso del Producto | Validación de Campos Vacíos |
+| :---: | :---: |
+| <img src="https://github.com/user-attachments/assets/922685e6-39a8-4b09-abe0-f3df78fee16d" width="280" alt="Validación y Alerta de Error" /> | <img src="https://github.com/user-attachments/assets/26a9365f-57d9-445c-b5fc-d5d18966dad7" width="280" alt="Resumen de Registro" /> |
 
 
+## Mejora con IA
+
+| Prompt que usé | Qué generó Gemini | Qué acepté o corregí (y por qué) |
+| :--- | :--- | :--- |
+| Necesito optimizar la interfaz de `PantallaRegistro` en Jetpack Compose. Implementa una comprobación para prevenir el registro si algún campo está vacío, desplegando una alerta en texto rojo bajo los controles. Adicionalmente, incluye un botón secundario de tipo `OutlinedButton` al lado de AGREGAR para reiniciar todos los inputs a su estado inicial. | Modificó el bloque del composable agregando la variable de estado `mensajeError`, integró la comprobación condicional para validar campos en blanco antes de procesar el resumen, y añadió un `OutlinedButton` alineado en un `Row` horizontal para restablecer las variables. | Conservé la estructura del botón secundario de limpieza y la alerta visual en rojo. Sin embargo, complementé la lógica de validación añadiendo comprobaciones de conversión numéricas (`toDoubleOrNull()` y `toIntOrNull()`) para garantizar que precio y cantidad sean datos válidos antes de efectuar los cálculos del importe total. |
