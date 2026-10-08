@@ -6,6 +6,5 @@ data class Medico(
     val especialidadId: String,
     val especialidadNombre: String,
     val cmp: String,
-    val calificacion: Double,
-    val foto: String = ""
+    val calificacion: String = "4.8"
 )

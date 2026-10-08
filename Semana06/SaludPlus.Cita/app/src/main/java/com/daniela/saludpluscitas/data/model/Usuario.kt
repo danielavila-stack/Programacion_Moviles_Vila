@@ -6,5 +6,5 @@ data class Usuario(
     val dni: String,
     val telefono: String,
     val correo: String,
-    val contrasena: String
+    val clave: String
 )

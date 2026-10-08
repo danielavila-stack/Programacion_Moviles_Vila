@@ -4,9 +4,7 @@ data class Cita(
     val id: String,
     val usuarioId: String,
     val medicoId: String,
-    val medicoNombre: String,
-    val especialidadNombre: String,
     val fecha: String,
     val hora: String,
-    val estado: String = "Agendada"
+    val estado: String
 )
