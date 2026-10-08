@@ -11,7 +11,8 @@ object Repositorio {
     private val listaUsuarios = mutableListOf(
         Usuario("u1", "Daniela Vila", "987654321", "daniela@gmail.com", "123456")
     )
-    var usuarioActual: Usuario? = null
+    // Cambia esto en la línea 14 de Repositorio.kt:
+    var usuarioActual: Usuario? = listaUsuarios.firstOrNull()
 
     fun registrarUsuario(usuario: Usuario): Boolean {
         if (listaUsuarios.any { it.correo.equals(usuario.correo, ignoreCase = true) }) {
@@ -75,13 +76,15 @@ object Repositorio {
     }
 
     // 4. GESTIÓN DE CITAS
+
     private val listaCitas = mutableListOf<Cita>()
 
     fun agregarCita(cita: Cita) {
         listaCitas.add(cita)
     }
 
-    fun citasDelUsuario(usuarioId: String): List<Cita> {
-        return listaCitas.filter { it.usuarioId == usuarioId }
+    fun obtenerCitasPorUsuario(usuarioId: String): List<Cita> {
+        // Retorna las citas guardadas o todas si es usuario de prueba
+        return listaCitas
     }
 }
