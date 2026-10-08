@@ -19,6 +19,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.daniela.clinicasaludplus.ui.screens.DetalleCitaScreen
 import com.daniela.clinicasaludplus.ui.screens.*
+import com.daniela.clinicasaludplus.ui.screens.TerminosScreen
 
 @Composable
 fun AppNavigation() {

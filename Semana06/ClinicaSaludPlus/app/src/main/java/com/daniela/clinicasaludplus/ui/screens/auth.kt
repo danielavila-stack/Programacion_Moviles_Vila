@@ -104,6 +104,7 @@ fun RegistroScreen(navController: NavController) {
     var contrasena by remember { mutableStateOf("") }
     var error by remember { mutableStateOf("") }
 
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -157,29 +158,28 @@ fun RegistroScreen(navController: NavController) {
             Text("Registrarse")
         }
 
-        TextButton(
-            onClick = { navController.popBackStack() }
-        ) {
+        // ... tus campos de texto (Nombre, Correo, Contraseña) y el botón Registrarse ...
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+// Enlace para ir a Login
+        TextButton(onClick = { navController.navigate(Rutas.LOGIN) }) {
             Text("¿Ya tienes cuenta? Inicia sesión")
+        }
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+// Botoncito/Línea discreta abajo para Términos y Condiciones
+        TextButton(
+            onClick = { navController.navigate("terminos") }
+        ) {
+            Text(
+                text = "Ver Términos y Condiciones",
+                style = MaterialTheme.typography.bodyMedium,
+                textDecoration = androidx.compose.ui.text.style.TextDecoration.Underline,
+                color = MaterialTheme.colorScheme.primary
+            )
         }
     }
 }
 
-@Composable
-fun TerminosScreen(navController: NavController) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(24.dp),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Text("Términos y Condiciones", style = MaterialTheme.typography.headlineMedium)
-        Spacer(modifier = Modifier.height(16.dp))
-        Text("Al usar Clínica Salud Plus aceptas nuestros términos de servicio.")
-        Spacer(modifier = Modifier.height(24.dp))
-        Button(onClick = { navController.popBackStack() }) {
-            Text("Aceptar y Volver")
-        }
-    }
-}

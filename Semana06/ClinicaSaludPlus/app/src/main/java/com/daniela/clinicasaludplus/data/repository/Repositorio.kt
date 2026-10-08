@@ -53,7 +53,14 @@ object Repositorio {
             it.nombre.contains(query, ignoreCase = true) || it.descripcion.contains(query, ignoreCase = true)
         }
     }
+    //RETOS
+    fun cancelarCita(id: String) {
+        listaCitas.removeIf { it.id == id }
+    }
 
+    fun obtenerCitaPorId(id: String): Cita? {
+        return listaCitas.find { it.id == id }
+    }
     fun obtenerEspecialidadPorId(id: String): Especialidad? {
         return especialidades.find { it.id == id }
     }

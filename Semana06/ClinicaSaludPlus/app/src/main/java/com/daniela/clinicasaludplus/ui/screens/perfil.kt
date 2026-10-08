@@ -58,6 +58,7 @@ fun PerfilScreen(navController: NavController) {
                         }
                     }
 
+
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(Icons.Default.Email, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
                         Spacer(modifier = Modifier.width(12.dp))
@@ -84,6 +85,27 @@ fun PerfilScreen(navController: NavController) {
                 }
             }
 
+            // Dentro de PerfilScreen, debajo de la tarjeta de Información Personal:
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+// Botón para ir al Reto 2: Resultados
+            OutlinedButton(
+                onClick = { navController.navigate("resultados") },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("Ver Resultados Médicos")
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+// Botón para ir al Reto 3: Notificaciones
+            OutlinedButton(
+                onClick = { navController.navigate("notificaciones") },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("Ver Notificaciones")
+            }
             Spacer(modifier = Modifier.weight(1f))
 
             Button(
