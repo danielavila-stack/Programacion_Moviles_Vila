@@ -18,7 +18,7 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    // La navegación principal (AppNavigation) se conectará aquí en los siguientes commits
+                    // La navegación se conectará en los siguientes pasos
                 }
             }
         }
