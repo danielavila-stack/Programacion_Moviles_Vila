@@ -5,14 +5,11 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="1a71e0ce-8668-4cab-9f12-bcaad949150a" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/Semana06/SaludPlus.Cita/app/src/main/java/com/daniela/saludpluscitas/ui/screens/main/MisDoctoresScreen.kt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Semana06/SaludPlus.Cita/app/src/main/res/drawable/img.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Semana06/SaludPlus.Cita/app/src/main/res/drawable/img_1.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Semana06/SaludPlus.Cita/app/src/main/res/drawable/img_2.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Semana06/SaludPlus.Cita/app/src/main/res/drawable/img_3.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Semana06/SaludPlus.Cita/app/src/main/java/com/daniela/saludpluscitas/ui/screens/main/LocalesScreen.kt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Semana06/SaludPlus.Cita/app/src/main/java/com/daniela/saludpluscitas/navigation/GrafoNavegacion.kt" beforeDir="false" afterPath="$PROJECT_DIR$/Semana06/SaludPlus.Cita/app/src/main/java/com/daniela/saludpluscitas/navigation/GrafoNavegacion.kt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Semana06/SaludPlus.Cita/app/src/main/java/com/daniela/saludpluscitas/navigation/Rutas.kt" beforeDir="false" afterPath="$PROJECT_DIR$/Semana06/SaludPlus.Cita/app/src/main/java/com/daniela/saludpluscitas/navigation/Rutas.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Semana06/SaludPlus.Cita/app/src/main/java/com/daniela/saludpluscitas/ui/screens/citas/ConfirmacionScreen.kt" beforeDir="false" afterPath="$PROJECT_DIR$/Semana06/SaludPlus.Cita/app/src/main/java/com/daniela/saludpluscitas/ui/screens/citas/ConfirmacionScreen.kt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Semana06/SaludPlus.Cita/app/src/main/java/com/daniela/saludpluscitas/ui/screens/main/HomeScreen.kt" beforeDir="false" afterPath="$PROJECT_DIR$/Semana06/SaludPlus.Cita/app/src/main/java/com/daniela/saludpluscitas/ui/screens/main/HomeScreen.kt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
