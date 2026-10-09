@@ -24,57 +24,70 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.daniela.saludpluscitas.ui.components.BotonSaludPlus
-import com.daniela.saludpluscitas.ui.theme.AzulClaroFondo
+
 import com.daniela.saludpluscitas.ui.theme.AzulPrimario
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
+import com.daniela.saludpluscitas.R
 
 @Composable
 fun SplashScreen(
     onNavegarLogin: () -> Unit,
     onNavegarRegistro: () -> Unit
 ) {
+    val azul = Color(0xFF1F6FEB)
+
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .background(Color.White)
             .padding(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Spacer(modifier = Modifier.height(48.dp))
+        Spacer(modifier = Modifier.height(32.dp))
 
+        // Logo: círculo celeste + cuadrado azul + cruz blanca
         Box(
             modifier = Modifier
-                .size(60.dp)
-                .clip(RoundedCornerShape(16.dp))
-                .background(AzulPrimario),
+                .size(80.dp)
+                .clip(CircleShape)
+                .background(Color(0xFFD6E6FF)),
             contentAlignment = Alignment.Center
         ) {
-            Icon(
-                imageVector = Icons.Default.Add,
-                contentDescription = null,
-                tint = Color.White,
-                modifier = Modifier.size(36.dp)
-            )
+            Box(
+                modifier = Modifier
+                    .size(46.dp)
+                    .clip(RoundedCornerShape(10.dp))
+                    .background(azul),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Add,
+                    contentDescription = null,
+                    tint = Color.White,
+                    modifier = Modifier.size(30.dp)
+                )
+            }
         }
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        Text(text = "Clínica", fontSize = 18.sp, color = AzulPrimario)
-        Text(text = "SaludPlus", fontSize = 28.sp, fontWeight = FontWeight.Bold, color = AzulPrimario)
+        Text(text = "Clínica", fontSize = 20.sp, color = azul)
+        Text(text = "SaludPlus", fontSize = 34.sp, fontWeight = FontWeight.Bold, color = azul)
         Text(text = "Tu salud, nuestra prioridad", fontSize = 14.sp, color = Color.Gray)
 
-        Spacer(modifier = Modifier.weight(1f))
-
-        // Espacio reservado para ilustración del médico
-        Box(
+        // Imagen del doctor (ocupa el espacio del centro)
+        Image(
+            painter = painterResource(id = R.drawable.doc),
+            contentDescription = "Doctor",
             modifier = Modifier
-                .fillMaxWidth(0.8f)
-                .height(200.dp)
-                .background(AzulClaroFondo, shape = RoundedCornerShape(24.dp)),
-            contentAlignment = Alignment.Center
-        ) {
-            Text("👨‍⚕️", fontSize = 80.sp)
-        }
-
-        Spacer(modifier = Modifier.weight(1f))
+                .weight(1f)
+                .fillMaxWidth()
+                .padding(vertical = 16.dp),
+            contentScale = ContentScale.Fit
+        )
 
         BotonSaludPlus(
             texto = "Comenzar",
@@ -84,9 +97,9 @@ fun SplashScreen(
         Spacer(modifier = Modifier.height(8.dp))
 
         TextButton(onClick = onNavegarLogin) {
-            Text(text = "Ya tengo una cuenta", color = AzulPrimario)
+            Text(text = "Ya tengo una cuenta", color = azul)
         }
 
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(modifier = Modifier.height(16.dp))
     }
 }
