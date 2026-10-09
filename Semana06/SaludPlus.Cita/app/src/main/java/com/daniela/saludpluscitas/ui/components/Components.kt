@@ -11,8 +11,8 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Receipt
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
@@ -24,6 +24,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -45,7 +46,7 @@ fun BotonSaludPlus(
         onClick = onClick,
         modifier = modifier
             .fillMaxWidth()
-            .height(50.dp),
+            .height(52.dp),
         shape = RoundedCornerShape(12.dp),
         enabled = enabled,
         colors = ButtonDefaults.buttonColors(containerColor = AzulPrimario)
@@ -61,18 +62,17 @@ fun CampoTextoSaludPlus(
     label: String,
     icon: ImageVector? = null,
     esContrasena: Boolean = false,
-    esPassword: Boolean = false,
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
     modifier: Modifier = Modifier
 ) {
-    val ocultar = esContrasena || esPassword
     OutlinedTextField(
         value = valor,
         onValueChange = onValorChange,
         label = { Text(label) },
         leadingIcon = icon?.let { { Icon(imageVector = it, contentDescription = null) } },
-        visualTransformation = if (ocultar) PasswordVisualTransformation() else VisualTransformation.None,
+        visualTransformation = if (esContrasena) PasswordVisualTransformation() else VisualTransformation.None,
         keyboardOptions = keyboardOptions,
+        shape = RoundedCornerShape(12.dp),
         singleLine = true,
         modifier = modifier.fillMaxWidth()
     )
@@ -85,7 +85,7 @@ fun AvatarIniciales(
 ) {
     Box(
         modifier = modifier
-            .size(48.dp)
+            .size(64.dp)
             .clip(CircleShape)
             .background(AzulClaroFondo),
         contentAlignment = Alignment.Center
@@ -94,7 +94,7 @@ fun AvatarIniciales(
             text = iniciales,
             fontWeight = FontWeight.Bold,
             color = AzulPrimario,
-            fontSize = 18.sp
+            fontSize = 20.sp
         )
     }
 }
@@ -104,7 +104,7 @@ fun BarraNavegacionInferior(
     rutaActual: String,
     onNavegar: (String) -> Unit
 ) {
-    NavigationBar {
+    NavigationBar(containerColor = Color.White) {
         NavigationBarItem(
             selected = rutaActual == Rutas.Home.ruta,
             onClick = { onNavegar(Rutas.Home.ruta) },
@@ -112,16 +112,16 @@ fun BarraNavegacionInferior(
             label = { Text("Inicio") }
         )
         NavigationBarItem(
-            selected = rutaActual == Rutas.Especialidades.ruta,
-            onClick = { onNavegar(Rutas.Especialidades.ruta) },
-            icon = { Icon(Icons.Default.List, contentDescription = "Especialidades") },
-            label = { Text("Especialidades") }
-        )
-        NavigationBarItem(
             selected = rutaActual == Rutas.MisCitas.ruta,
             onClick = { onNavegar(Rutas.MisCitas.ruta) },
-            icon = { Icon(Icons.Default.DateRange, contentDescription = "Mis Citas") },
+            icon = { Icon(Icons.Default.DateRange, contentDescription = "Citas") },
             label = { Text("Citas") }
+        )
+        NavigationBarItem(
+            selected = rutaActual == Rutas.Resultados.ruta,
+            onClick = { onNavegar(Rutas.Resultados.ruta) },
+            icon = { Icon(Icons.Default.Receipt, contentDescription = "Resultados") },
+            label = { Text("Resultados") }
         )
         NavigationBarItem(
             selected = rutaActual == Rutas.Perfil.ruta,
