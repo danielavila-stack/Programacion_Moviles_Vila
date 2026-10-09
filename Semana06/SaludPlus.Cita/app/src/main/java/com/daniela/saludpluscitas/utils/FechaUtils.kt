@@ -1,4 +1,4 @@
-package com.daniela.saludpluscitas.util
+package com.daniela.saludpluscitas.utils
 
 import java.time.DayOfWeek
 import java.time.LocalDate

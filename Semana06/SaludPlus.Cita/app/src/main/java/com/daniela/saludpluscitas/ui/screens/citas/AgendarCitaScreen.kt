@@ -13,11 +13,12 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyRow
+import com.daniela.saludpluscitas.utils.FechaUtils
+import java.time.LocalDate
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.foundation.lazy.items
+
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -47,6 +48,7 @@ import com.daniela.saludpluscitas.ui.components.BotonSaludPlus
 import com.daniela.saludpluscitas.ui.theme.AzulClaroFondo
 import com.daniela.saludpluscitas.ui.theme.AzulPrimario
 
+
 @Composable
 fun AgendarCitaScreen(
     medicoId: String,
@@ -54,16 +56,17 @@ fun AgendarCitaScreen(
     onVolver: () -> Unit = {}
 ) {
     val medico = Repositorio.obtenerMedicoPorId(medicoId)
-    val dias = listOf(
-        Pair("Jue", "8"), Pair("Vie", "9"), Pair("Lun", "12"), Pair("Mar", "13"), Pair("Mié", "14")
-    )
-    val horarios = listOf(
-        "08:00", "09:00", "09:30", "10:00", "10:30", "11:00",
-        "11:30", "14:00", "14:30", "15:00", "15:30"
-    )
 
-    var diaSeleccionado by remember { mutableStateOf("8") }
-    var horaSeleccionada by remember { mutableStateOf("15:30") }
+    // Estados
+    var semanaOffset by remember { mutableStateOf(0) }                    // 0 = semana actual
+    var fechaSeleccionada by remember { mutableStateOf<LocalDate?>(null) }
+    var horaSeleccionada by remember { mutableStateOf<String?>(null) }
+
+    // Datos que se recalculan solos cuando cambian los estados
+    val dias = FechaUtils.diasHabiles(semanaOffset)
+    val horarios = fechaSeleccionada?.let {
+        Repositorio.horariosDisponibles(medicoId, it.toString())
+    } ?: emptyList()
 
     Column(
         modifier = Modifier
@@ -106,25 +109,62 @@ fun AgendarCitaScreen(
 
         Spacer(modifier = Modifier.height(20.dp))
 
+        // Cabecera: flechas + mes y año
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Icon(Icons.Default.KeyboardArrowLeft, contentDescription = null, tint = Color.Gray)
-            Text(text = "Octubre 2026", fontWeight = FontWeight.Bold, fontSize = 16.sp)
-            Icon(Icons.Default.KeyboardArrowRight, contentDescription = null, tint = Color.Gray)
+            IconButton(
+                onClick = {
+                    semanaOffset--
+                    fechaSeleccionada = null
+                    horaSeleccionada = null
+                },
+                enabled = semanaOffset > 0
+            ) {
+                Icon(
+                    Icons.Default.KeyboardArrowLeft,
+                    contentDescription = "Semana anterior",
+                    tint = if (semanaOffset > 0) Color.Black else Color.LightGray
+                )
+            }
+            Text(
+                text = FechaUtils.mesYAnio(dias.first()),
+                fontWeight = FontWeight.Bold,
+                fontSize = 16.sp
+            )
+            IconButton(
+                onClick = {
+                    semanaOffset++
+                    fechaSeleccionada = null
+                    horaSeleccionada = null
+                }
+            ) {
+                Icon(
+                    Icons.Default.KeyboardArrowRight,
+                    contentDescription = "Semana siguiente",
+                    tint = Color.Black
+                )
+            }
         }
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            items(dias) { (nom, num) ->
-                val esSel = num == diaSeleccionado
+        // Los 5 días hábiles
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            dias.forEach { dia ->
+                val esSel = dia == fechaSeleccionada
                 Card(
                     modifier = Modifier
-                        .width(62.dp)
-                        .clickable { diaSeleccionado = num },
+                        .weight(1f)
+                        .clickable {
+                            fechaSeleccionada = dia
+                            horaSeleccionada = null   // al cambiar de día se reinicia la hora
+                        },
                     shape = RoundedCornerShape(12.dp),
                     colors = CardDefaults.cardColors(
                         containerColor = if (esSel) AzulPrimario else Color(0xFFF5F7FA)
@@ -134,9 +174,18 @@ fun AgendarCitaScreen(
                         modifier = Modifier.padding(vertical = 12.dp).fillMaxWidth(),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        Text(nom, fontSize = 12.sp, color = if (esSel) Color.White else Color.Gray)
+                        Text(
+                            FechaUtils.diaCorto(dia),
+                            fontSize = 12.sp,
+                            color = if (esSel) Color.White else Color.Gray
+                        )
                         Spacer(modifier = Modifier.height(4.dp))
-                        Text(num, fontSize = 16.sp, fontWeight = FontWeight.Bold, color = if (esSel) Color.White else Color.Black)
+                        Text(
+                            dia.dayOfMonth.toString(),
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = if (esSel) Color.White else Color.Black
+                        )
                     }
                 }
             }
@@ -148,28 +197,43 @@ fun AgendarCitaScreen(
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        LazyVerticalGrid(
-            columns = GridCells.Fixed(3),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-            modifier = Modifier.weight(1f)
-        ) {
-            items(horarios) { h ->
-                val esSel = h == horaSeleccionada
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable { horaSeleccionada = h },
-                    shape = RoundedCornerShape(10.dp),
-                    colors = CardDefaults.cardColors(
-                        containerColor = if (esSel) AzulPrimario else Color(0xFFEDF2F7)
-                    )
+        // Zona de horarios (ocupa el espacio que sobra)
+        Box(modifier = Modifier.weight(1f)) {
+            when {
+                fechaSeleccionada == null ->
+                    Text("Elige un día para ver los horarios", color = Color.Gray)
+
+                horarios.isEmpty() ->
+                    Text("No hay horarios disponibles para este día", color = Color.Gray)
+
+                else -> LazyVerticalGrid(
+                    columns = GridCells.Fixed(3),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    Box(
-                        modifier = Modifier.padding(vertical = 12.dp).fillMaxWidth(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(h, fontSize = 14.sp, fontWeight = FontWeight.Medium, color = if (esSel) Color.White else AzulPrimario)
+                    items(horarios) { h ->
+                        val esSel = h == horaSeleccionada
+                        Card(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable { horaSeleccionada = h },
+                            shape = RoundedCornerShape(10.dp),
+                            colors = CardDefaults.cardColors(
+                                containerColor = if (esSel) AzulPrimario else Color(0xFFEDF2F7)
+                            )
+                        ) {
+                            Box(
+                                modifier = Modifier.padding(vertical = 12.dp).fillMaxWidth(),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    h,
+                                    fontSize = 14.sp,
+                                    fontWeight = FontWeight.Medium,
+                                    color = if (esSel) Color.White else AzulPrimario
+                                )
+                            }
+                        }
                     }
                 }
             }
@@ -178,14 +242,12 @@ fun AgendarCitaScreen(
         BotonSaludPlus(
             texto = "Continuar",
             onClick = {
-                val fechaFormateada = when(diaSeleccionado) {
-                    "8" -> "Jueves 8 de octubre 2026"
-                    "9" -> "Viernes 9 de octubre 2026"
-                    "12" -> "Lunes 12 de octubre 2026"
-                    "13" -> "Martes 13 de octubre 2026"
-                    else -> "Miércoles 14 de octubre 2026"
+                val fecha = fechaSeleccionada
+                val hora = horaSeleccionada
+                // Solo avanza si eligió día Y hora. La fecha viaja en ISO: 2026-10-13
+                if (fecha != null && hora != null) {
+                    onCitaConfirmada(medicoId, fecha.toString(), hora)
                 }
-                onCitaConfirmada(medicoId, fechaFormateada, horaSeleccionada)
             }
         )
     }
