@@ -1,6 +1,8 @@
 package com.daniela.saludpluscitas.navigation
 
+import android.widget.Toast
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -29,13 +31,35 @@ fun GrafoNavegacion() {
         navController = navController,
         startDestination = Rutas.Splash.ruta
     ) {
+        // 1. Pantalla Inicial (Splash / Bienvenida)
         composable(Rutas.Splash.ruta) {
             SplashScreen(
-                onNavegarLogin = { navController.navigate(Rutas.Login.ruta) },
-                onNavegarRegistro = { navController.navigate(Rutas.Registro.ruta) }
+                onNavegarRegistro = {
+                    navController.navigate(Rutas.Registro.ruta)
+                },
+                onNavegarLogin = {
+                    navController.navigate(Rutas.Login.ruta)
+                }
             )
         }
 
+        // 2. Pantalla de Registro (Lleva a Login tras el registro)
+        composable(Rutas.Registro.ruta) {
+            val context = LocalContext.current
+            RegistroScreen(
+                onRegistroExitoso = {
+                    Toast.makeText(context, "¡Registro exitoso! Por favor inicia sesión.", Toast.LENGTH_SHORT).show()
+
+                    navController.navigate(Rutas.Login.ruta) {
+                        popUpTo(Rutas.Registro.ruta) { inclusive = true }
+                    }
+                },
+                onIrATerminos = { navController.navigate(Rutas.Terminos.ruta) },
+                onIrALogin = { navController.navigate(Rutas.Login.ruta) }
+            )
+        }
+
+        // 3. Pantalla de Login (Lleva al Home tras iniciar sesión)
         composable(Rutas.Login.ruta) {
             LoginScreen(
                 onLoginExitoso = {
@@ -44,18 +68,6 @@ fun GrafoNavegacion() {
                     }
                 },
                 onIrARegistro = { navController.navigate(Rutas.Registro.ruta) }
-            )
-        }
-
-        composable(Rutas.Registro.ruta) {
-            RegistroScreen(
-                onRegistroExitoso = {
-                    navController.navigate(Rutas.Home.ruta) {
-                        popUpTo(Rutas.Splash.ruta) { inclusive = true }
-                    }
-                },
-                onIrATerminos = { navController.navigate(Rutas.Terminos.ruta) },
-                onIrALogin = { navController.navigate(Rutas.Login.ruta) }
             )
         }
 
@@ -158,7 +170,6 @@ fun GrafoNavegacion() {
                 onNavegarBottomBar = { ruta -> navController.navigate(ruta) },
                 rutaActual = Rutas.MisCitas.ruta,
                 onVolver = {
-                    // Regresa al Home
                     navController.navigate(Rutas.Home.ruta) {
                         popUpTo(Rutas.Home.ruta) { inclusive = true }
                     }

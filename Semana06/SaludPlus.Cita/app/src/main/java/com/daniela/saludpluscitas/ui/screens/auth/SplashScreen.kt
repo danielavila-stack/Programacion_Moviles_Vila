@@ -1,5 +1,6 @@
 package com.daniela.saludpluscitas.ui.screens.auth
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -9,6 +10,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -20,22 +22,18 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.daniela.saludpluscitas.ui.components.BotonSaludPlus
-
-import com.daniela.saludpluscitas.ui.theme.AzulPrimario
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
 import com.daniela.saludpluscitas.R
+import com.daniela.saludpluscitas.ui.components.BotonSaludPlus
 
 @Composable
 fun SplashScreen(
-    onNavegarLogin: () -> Unit,
-    onNavegarRegistro: () -> Unit
+    onNavegarRegistro: () -> Unit,
+    onNavegarLogin: () -> Unit
 ) {
     val azul = Color(0xFF1F6FEB)
 
@@ -48,7 +46,7 @@ fun SplashScreen(
     ) {
         Spacer(modifier = Modifier.height(32.dp))
 
-        // Logo: círculo celeste + cuadrado azul + cruz blanca
+        // Logo
         Box(
             modifier = Modifier
                 .size(80.dp)
@@ -78,7 +76,7 @@ fun SplashScreen(
         Text(text = "SaludPlus", fontSize = 34.sp, fontWeight = FontWeight.Bold, color = azul)
         Text(text = "Tu salud, nuestra prioridad", fontSize = 14.sp, color = Color.Gray)
 
-        // Imagen del doctor (ocupa el espacio del centro)
+        // Imagen del doctor
         Image(
             painter = painterResource(id = R.drawable.doc),
             contentDescription = "Doctor",
