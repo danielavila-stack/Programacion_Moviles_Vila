@@ -1,5 +1,7 @@
 package com.daniela.saludpluscitas.ui.screens.citas
 
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -11,7 +13,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -31,7 +33,6 @@ import com.daniela.saludpluscitas.data.repository.Repositorio
 import com.daniela.saludpluscitas.ui.components.BarraNavegacionInferior
 import com.daniela.saludpluscitas.ui.theme.AzulClaroFondo
 import com.daniela.saludpluscitas.ui.theme.AzulPrimario
-import com.daniela.saludpluscitas.utils.FechaUtils
 
 @Composable
 fun MisCitasScreen(
@@ -39,7 +40,7 @@ fun MisCitasScreen(
     onVerResultados: (String) -> Unit,
     onNavegarBottomBar: (String) -> Unit = {},
     rutaActual: String = "",
-    onVolver: () -> Unit = {} // <-- Parámetro agregado
+    onVolver: () -> Unit = {}
 ) {
     val citas = Repositorio.citas
 
@@ -64,8 +65,11 @@ fun MisCitasScreen(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                IconButton(onClick = onVolver) { // <-- Conectado aquí
-                    Icon(Icons.Default.ArrowBack, contentDescription = "Atrás")
+                IconButton(onClick = onVolver) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                        contentDescription = "Atrás"
+                    )
                 }
                 Spacer(modifier = Modifier.weight(1f))
                 Text(text = "Mis Citas", fontSize = 20.sp, fontWeight = FontWeight.Bold)
@@ -75,25 +79,34 @@ fun MisCitasScreen(
             Spacer(modifier = Modifier.height(16.dp))
 
             if (citas.isEmpty()) {
-                Text(
-                    text = "No tienes citas agendadas.",
-                    color = Color.Gray,
-                    modifier = Modifier.align(Alignment.CenterHorizontally)
-                )
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "No tienes citas agendadas.",
+                        color = Color.Gray,
+                        fontSize = 16.sp
+                    )
+                }
             } else {
-                LazyColumn {
+                LazyColumn(
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
                     items(citas) { cita ->
                         val medico = Repositorio.obtenerMedicoPorId(cita.medicoId)
+                        val especialidadNombre = Repositorio.obtenerEspecialidad(medico?.especialidadId ?: "")?.nombre ?: "Medicina General"
+
                         Card(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(vertical = 8.dp),
+                            modifier = Modifier.fillMaxWidth(),
                             shape = RoundedCornerShape(16.dp),
                             colors = CardDefaults.cardColors(containerColor = AzulClaroFondo)
                         ) {
                             Column(modifier = Modifier.padding(16.dp)) {
                                 Text(
-                                    text = "${FechaUtils.fechaLarga(cita.fecha)} - ${cita.hora}",
+                                    text = "${cita.fecha} - ${cita.hora}",
                                     fontWeight = FontWeight.Bold,
                                     color = AzulPrimario
                                 )
@@ -104,7 +117,7 @@ fun MisCitasScreen(
                                     fontSize = 16.sp
                                 )
                                 Text(
-                                    text = medico?.especialidadNombre ?: "Especialidad",
+                                    text = especialidadNombre,
                                     fontSize = 12.sp,
                                     color = Color.Gray
                                 )
@@ -112,7 +125,7 @@ fun MisCitasScreen(
                                 Row {
                                     Button(
                                         onClick = { onVerDetalle(cita.id) },
-                                        modifier = Modifier.weight(1f),
+                                        modifier = Modifier.fillMaxWidth(),
                                         shape = RoundedCornerShape(8.dp),
                                         colors = ButtonDefaults.buttonColors(containerColor = AzulPrimario)
                                     ) {

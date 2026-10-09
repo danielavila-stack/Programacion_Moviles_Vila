@@ -8,6 +8,8 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.daniela.saludpluscitas.data.model.Cita
+import com.daniela.saludpluscitas.data.repository.Repositorio
 import com.daniela.saludpluscitas.ui.screens.auth.LoginScreen
 import com.daniela.saludpluscitas.ui.screens.auth.RegistroScreen
 import com.daniela.saludpluscitas.ui.screens.auth.SplashScreen
@@ -33,6 +35,7 @@ fun GrafoNavegacion() {
         navController = navController,
         startDestination = Rutas.Splash.ruta
     ) {
+        // 1. Splash
         composable(Rutas.Splash.ruta) {
             SplashScreen(
                 onNavegarRegistro = { navController.navigate(Rutas.Registro.ruta) },
@@ -40,6 +43,7 @@ fun GrafoNavegacion() {
             )
         }
 
+        // 2. Registro
         composable(Rutas.Registro.ruta) {
             val context = LocalContext.current
             RegistroScreen(
@@ -54,6 +58,7 @@ fun GrafoNavegacion() {
             )
         }
 
+        // 3. Login
         composable(Rutas.Login.ruta) {
             LoginScreen(
                 onLoginExitoso = {
@@ -65,10 +70,12 @@ fun GrafoNavegacion() {
             )
         }
 
+        // Términos y condiciones
         composable(Rutas.Terminos.ruta) {
             TerminosScreen(onVolver = { navController.popBackStack() })
         }
 
+        // Home
         composable(Rutas.Home.ruta) {
             HomeScreen(
                 onNavegarALocales = { navController.navigate(Rutas.Locales.ruta) },
@@ -142,6 +149,17 @@ fun GrafoNavegacion() {
             AgendarCitaScreen(
                 medicoId = medicoId,
                 onCitaConfirmada = { idMed, fecha, hora ->
+                    // Crear y guardar la cita con todos los parámetros requeridos
+                    val nuevaCita = Cita(
+                        id = System.currentTimeMillis().toString(),
+                        usuarioId = Repositorio.usuarioActual?.id ?: "1",
+                        medicoId = idMed,
+                        fecha = fecha,
+                        hora = hora,
+                        estado = "Confirmada"
+                    )
+                    Repositorio.guardarCita(nuevaCita)
+
                     navController.navigate("${Rutas.Confirmacion.ruta}/$idMed/$localId/$fecha/$hora")
                 },
                 onVolver = { navController.popBackStack() }
@@ -176,14 +194,17 @@ fun GrafoNavegacion() {
             )
         }
 
+        // Mis Doctores
         composable(Rutas.MisDoctores.ruta) {
             MisDoctoresScreen(onVolver = { navController.popBackStack() })
         }
 
+        // Notificaciones
         composable(Rutas.Notificaciones.ruta) {
             NotificacionesScreen(onVolver = { navController.popBackStack() })
         }
 
+        // Mis Citas
         composable(Rutas.MisCitas.ruta) {
             MisCitasScreen(
                 onVerDetalle = { citaId -> navController.navigate("${Rutas.DetalleCita.ruta}/$citaId") },
@@ -198,6 +219,7 @@ fun GrafoNavegacion() {
             )
         }
 
+        // Detalle Cita
         composable(
             route = "${Rutas.DetalleCita.ruta}/{citaId}",
             arguments = listOf(navArgument("citaId") { type = NavType.StringType })
@@ -210,6 +232,7 @@ fun GrafoNavegacion() {
             )
         }
 
+        // Resultados
         composable(Rutas.Resultados.ruta) {
             ResultadosScreen(
                 onNavegarBottomBar = { ruta -> navController.navigate(ruta) },
@@ -217,6 +240,7 @@ fun GrafoNavegacion() {
             )
         }
 
+        // Perfil
         composable(Rutas.Perfil.ruta) {
             PerfilScreen(
                 onCerrarSesion = {
