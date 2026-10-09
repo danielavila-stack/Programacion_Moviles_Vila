@@ -29,6 +29,7 @@ import com.daniela.saludpluscitas.data.repository.Repositorio
 import com.daniela.saludpluscitas.ui.components.BotonSaludPlus
 import com.daniela.saludpluscitas.ui.theme.AzulClaroFondo
 import com.daniela.saludpluscitas.ui.theme.AzulPrimario
+import com.daniela.saludpluscitas.utils.FechaUtils
 
 @Composable
 fun DetalleCitaScreen(
@@ -69,7 +70,7 @@ fun DetalleCitaScreen(
 
                 Text(text = "Fecha y Hora", fontSize = 12.sp, color = Color.Gray)
                 Text(
-                    text = "${cita?.fecha ?: "Jueves 8 de octubre 2026"} - ${cita?.hora ?: "15:30"}",
+                    text = "${cita?.let { FechaUtils.fechaLarga(it.fecha) } ?: "Jueves 8 de octubre 2026"} - ${cita?.hora ?: "15:30"}",
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold,
                     color = AzulPrimario

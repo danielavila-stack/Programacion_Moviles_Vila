@@ -39,6 +39,7 @@ import com.daniela.saludpluscitas.data.repository.Repositorio
 import com.daniela.saludpluscitas.ui.components.AvatarIniciales
 import com.daniela.saludpluscitas.ui.components.BotonSaludPlus
 import com.daniela.saludpluscitas.ui.theme.AzulPrimario
+import com.daniela.saludpluscitas.utils.FechaUtils
 
 @Composable
 fun ConfirmacionScreen(
@@ -94,7 +95,7 @@ fun ConfirmacionScreen(
                 HorizontalDivider(color = Color(0xFFEEEEEE))
                 Spacer(modifier = Modifier.height(12.dp))
 
-                ItemInfoConfirmar(icon = Icons.Default.DateRange, label = "Fecha", valor = fecha)
+                ItemInfoConfirmar(icon = Icons.Default.DateRange, label = "Fecha", valor = FechaUtils.fechaLarga(fecha))
                 Spacer(modifier = Modifier.height(10.dp))
                 ItemInfoConfirmar(icon = Icons.Default.Info, label = "Hora", valor = hora)
                 Spacer(modifier = Modifier.height(10.dp))

@@ -31,6 +31,7 @@ import com.daniela.saludpluscitas.data.repository.Repositorio
 import com.daniela.saludpluscitas.ui.components.BarraNavegacionInferior
 import com.daniela.saludpluscitas.ui.theme.AzulClaroFondo
 import com.daniela.saludpluscitas.ui.theme.AzulPrimario
+import com.daniela.saludpluscitas.utils.FechaUtils
 
 @Composable
 fun MisCitasScreen(
@@ -92,7 +93,7 @@ fun MisCitasScreen(
                         ) {
                             Column(modifier = Modifier.padding(16.dp)) {
                                 Text(
-                                    text = "${cita.fecha} - ${cita.hora}",
+                                    text = "${FechaUtils.fechaLarga(cita.fecha)} - ${cita.hora}",
                                     fontWeight = FontWeight.Bold,
                                     color = AzulPrimario
                                 )

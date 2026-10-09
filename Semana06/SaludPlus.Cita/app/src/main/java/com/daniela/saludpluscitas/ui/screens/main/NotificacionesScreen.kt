@@ -27,13 +27,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.daniela.saludpluscitas.data.repository.Repositorio
 import com.daniela.saludpluscitas.ui.theme.AzulPrimario
+import com.daniela.saludpluscitas.utils.FechaUtils
 
 @Composable
 fun NotificacionesScreen(onVolver: () -> Unit) {
     // Reto 3: Transformación con .map sobre la lista de citas
     val notificaciones = Repositorio.citas.map { cita ->
         val medico = Repositorio.obtenerMedicoPorId(cita.medicoId)
-        "Recordatorio: Tienes una cita programada con ${medico?.nombre ?: "tu médico"} el día ${cita.fecha} a las ${cita.hora}."
+        "Recordatorio: Tienes una cita programada con ${medico?.nombre ?: "tu médico"} el día ${FechaUtils.fechaLarga(cita.fecha)} a las ${cita.hora}."
     }
 
     Column(
