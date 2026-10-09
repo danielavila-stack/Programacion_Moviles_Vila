@@ -20,6 +20,7 @@ import com.daniela.saludpluscitas.ui.screens.citas.ResultadosScreen
 import com.daniela.saludpluscitas.ui.screens.main.EspecialidadesScreen
 import com.daniela.saludpluscitas.ui.screens.main.HomeScreen
 import com.daniela.saludpluscitas.ui.screens.main.MedicosScreen
+import com.daniela.saludpluscitas.ui.screens.main.MisDoctoresScreen
 import com.daniela.saludpluscitas.ui.screens.main.NotificacionesScreen
 import com.daniela.saludpluscitas.ui.screens.perfil.PerfilScreen
 
@@ -31,7 +32,7 @@ fun GrafoNavegacion() {
         navController = navController,
         startDestination = Rutas.Splash.ruta
     ) {
-        // 1. Pantalla Inicial (Splash / Bienvenida)
+        // 1. Splash
         composable(Rutas.Splash.ruta) {
             SplashScreen(
                 onNavegarRegistro = {
@@ -43,13 +44,12 @@ fun GrafoNavegacion() {
             )
         }
 
-        // 2. Pantalla de Registro (Lleva a Login tras el registro)
+        // 2. Registro (lleva a Login tras registrarse)
         composable(Rutas.Registro.ruta) {
             val context = LocalContext.current
             RegistroScreen(
                 onRegistroExitoso = {
                     Toast.makeText(context, "¡Registro exitoso! Por favor inicia sesión.", Toast.LENGTH_SHORT).show()
-
                     navController.navigate(Rutas.Login.ruta) {
                         popUpTo(Rutas.Registro.ruta) { inclusive = true }
                     }
@@ -59,7 +59,7 @@ fun GrafoNavegacion() {
             )
         }
 
-        // 3. Pantalla de Login (Lleva al Home tras iniciar sesión)
+        // 3. Login
         composable(Rutas.Login.ruta) {
             LoginScreen(
                 onLoginExitoso = {
@@ -79,6 +79,7 @@ fun GrafoNavegacion() {
 
         composable(Rutas.Home.ruta) {
             HomeScreen(
+                onNavegarAMisDoctores = { navController.navigate(Rutas.MisDoctores.ruta) },
                 onNavegarAEspecialidades = { navController.navigate(Rutas.Especialidades.ruta) },
                 onNavegarAMedicos = { especialidadId ->
                     navController.navigate("${Rutas.Medicos.ruta}/$especialidadId")
@@ -89,6 +90,14 @@ fun GrafoNavegacion() {
             )
         }
 
+        // Mis Doctores
+        composable(Rutas.MisDoctores.ruta) {
+            MisDoctoresScreen(
+                onVolver = { navController.popBackStack() }
+            )
+        }
+
+        // Notificaciones
         composable(Rutas.Notificaciones.ruta) {
             NotificacionesScreen(
                 onVolver = { navController.popBackStack() }

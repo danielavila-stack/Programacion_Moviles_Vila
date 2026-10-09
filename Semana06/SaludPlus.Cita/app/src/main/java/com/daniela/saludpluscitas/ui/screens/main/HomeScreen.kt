@@ -44,6 +44,7 @@ import com.daniela.saludpluscitas.ui.theme.AzulPrimario
 
 @Composable
 fun HomeScreen(
+    onNavegarAMisDoctores: () -> Unit, // <-- Nuevo callback
     onNavegarAEspecialidades: () -> Unit,
     onNavegarAMedicos: (String) -> Unit,
     onNavegarBottomBar: (String) -> Unit,
@@ -86,7 +87,6 @@ fun HomeScreen(
                         color = Color.Gray
                     )
                 }
-                // Campanita conectada a la pantalla de Notificaciones
                 IconButton(onClick = onIrANotificaciones) {
                     Icon(Icons.Default.Notifications, contentDescription = "Notificaciones", tint = AzulPrimario)
                 }
@@ -95,6 +95,7 @@ fun HomeScreen(
             Spacer(modifier = Modifier.height(20.dp))
 
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                // Fila 1 (Intacta)
                 Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                     TarjetaMenuHome(
                         titulo = "Agendar cita",
@@ -114,6 +115,7 @@ fun HomeScreen(
                     )
                 }
 
+                // Fila 2 (Intacta)
                 Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                     TarjetaMenuHome(
                         titulo = "Mis datos",
@@ -131,6 +133,19 @@ fun HomeScreen(
                         modifier = Modifier.weight(1f),
                         onClick = { onNavegarBottomBar(Rutas.Resultados.ruta) }
                     )
+                }
+
+                // Fila 3 (Nueva opción Mis doctores)
+                Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    TarjetaMenuHome(
+                        titulo = "Mis doctores",
+                        icono = Icons.Default.Person,
+                        colorFondo = Color(0xFFE3F2FD),
+                        colorTexto = AzulPrimario,
+                        modifier = Modifier.weight(1f),
+                        onClick = onNavegarAMisDoctores
+                    )
+                    Spacer(modifier = Modifier.weight(1f))
                 }
             }
 
