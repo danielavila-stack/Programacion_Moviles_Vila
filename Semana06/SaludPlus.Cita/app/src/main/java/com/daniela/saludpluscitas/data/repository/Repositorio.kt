@@ -4,6 +4,7 @@ import com.daniela.saludpluscitas.data.model.Cita
 import com.daniela.saludpluscitas.data.model.Especialidad
 import com.daniela.saludpluscitas.data.model.Medico
 import com.daniela.saludpluscitas.data.model.Usuario
+import com.daniela.saludpluscitas.data.model.ResultadoMedico
 
 object Repositorio {
     var usuarioActual: Usuario? = Usuario(
@@ -33,6 +34,13 @@ object Repositorio {
         Medico("3", "Dr. Luis Paredes", "2", "Pediatría", "CMP 38910", "4.7"),
         Medico("4", "Dra. Sofía Torres", "3", "Cardiología", "CMP 60124", "4.9"),
         Medico("5", "Dr. Roberto Gómez", "4", "Dermatología", "CMP 42105", "4.6")
+    )
+
+    val resultadosMedicos = mutableListOf(
+        ResultadoMedico("1", "Hemograma completo", "2026-08-12", "Valores dentro del rango normal.", "Dr. Carlos Mendoza"),
+        ResultadoMedico("2", "Perfil lipídico", "2026-08-12", "Colesterol LDL ligeramente elevado.", "Dra. Ana López"),
+        ResultadoMedico("3", "Radiografía de tórax", "2026-07-03", "Sin hallazgos relevantes.", "Dr. Pedro Salas"),
+        ResultadoMedico("4", "Glucosa en ayunas", "2026-06-20", "Normal: 88 mg/dL.", "Dr. Carlos Mendoza")
     )
 
     val citas = mutableListOf<Cita>()
@@ -74,6 +82,10 @@ object Repositorio {
 
     fun guardarCita(cita: Cita) {
         citas.add(cita)
+    }
+
+    fun eliminarCita(id: String) {
+        citas.removeAll { it.id == id }
     }
 
     fun obtenerCitaPorId(id: String): Cita? = citas.find { it.id == id }

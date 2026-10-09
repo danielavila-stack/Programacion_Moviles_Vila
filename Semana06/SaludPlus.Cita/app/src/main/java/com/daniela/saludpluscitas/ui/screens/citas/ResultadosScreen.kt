@@ -6,98 +6,76 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.daniela.saludpluscitas.data.repository.Repositorio
-import com.daniela.saludpluscitas.ui.components.BotonSaludPlus
-import com.daniela.saludpluscitas.ui.theme.AzulClaroFondo
+import com.daniela.saludpluscitas.ui.components.BarraNavegacionInferior
 import com.daniela.saludpluscitas.ui.theme.AzulPrimario
 
 @Composable
 fun ResultadosScreen(
-    citaId: String,
-    onVolver: () -> Unit
+    onNavegarBottomBar: (String) -> Unit = {},
+    rutaActual: String = ""
 ) {
-    val cita = Repositorio.obtenerCitaPorId(citaId)
-    val medico = cita?.let { Repositorio.obtenerMedicoPorId(it.medicoId) }
+    // Reto 2: Uso de modelo propio y lista fija del Repositorio
+    val listaResultados = Repositorio.resultadosMedicos
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(24.dp)
-    ) {
-        Spacer(modifier = Modifier.height(16.dp))
-        Text(
-            text = "Resultados Clínicos",
-            fontSize = 24.sp,
-            fontWeight = FontWeight.Bold,
-            color = AzulPrimario
-        )
-
-        Spacer(modifier = Modifier.height(24.dp))
-
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(16.dp),
-            colors = CardDefaults.cardColors(containerColor = AzulClaroFondo)
+    Scaffold(
+        bottomBar = {
+            BarraNavegacionInferior(
+                rutaActual = rutaActual,
+                onNavegar = onNavegarBottomBar
+            )
+        }
+    ) { padding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding)
+                .padding(horizontal = 20.dp)
         ) {
-            Column(modifier = Modifier.padding(20.dp)) {
-                Text(
-                    text = "Informe Atendido por:",
-                    fontSize = 12.sp,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-                Text(
-                    text = medico?.nombre ?: "Médico Evaluador",
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold
-                )
+            Spacer(modifier = Modifier.height(16.dp))
 
-                Spacer(modifier = Modifier.height(16.dp))
+            Text(
+                text = "Resultados Clínicos",
+                fontSize = 22.sp,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.align(Alignment.CenterHorizontally)
+            )
 
-                Text(
-                    text = "Diagnóstico / Observaciones:",
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = AzulPrimario
-                )
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = "Paciente con parámetros estables. Se recomienda continuar con hidratación adecuada, mantener reposo moderado y control preventivo en 6 meses.",
-                    fontSize = 14.sp,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
+            Spacer(modifier = Modifier.height(20.dp))
 
-                Spacer(modifier = Modifier.height(16.dp))
-
-                Text(
-                    text = "Receta / Indicaciones:",
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = AzulPrimario
-                )
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = "• Paracetamol 500mg cada 8 horas por 3 días (si hay malestar).\n• Multivitamínico 1 cápsula diaria con el desayuno.",
-                    fontSize = 14.sp,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
+            LazyColumn {
+                items(listaResultados) { item ->
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 6.dp),
+                        shape = RoundedCornerShape(16.dp),
+                        colors = CardDefaults.cardColors(containerColor = Color.White)
+                    ) {
+                        Column(modifier = Modifier.padding(16.dp)) {
+                            Text(text = item.titulo, fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                            Spacer(modifier = Modifier.height(2.dp))
+                            Text(text = "Fecha: ${item.fecha} · Evaluado por: ${item.medicoEncargado}", fontSize = 12.sp, color = AzulPrimario)
+                            Spacer(modifier = Modifier.height(6.dp))
+                            Text(text = item.diagnostico, fontSize = 13.sp, color = Color.Gray)
+                        }
+                    }
+                }
             }
         }
-
-        Spacer(modifier = Modifier.weight(1f))
-
-        BotonSaludPlus(
-            texto = "Regresar a Mis Citas",
-            onClick = onVolver
-        )
     }
 }

@@ -34,6 +34,10 @@ import androidx.compose.ui.unit.sp
 import com.daniela.saludpluscitas.navigation.Rutas
 import com.daniela.saludpluscitas.ui.theme.AzulClaroFondo
 import com.daniela.saludpluscitas.ui.theme.AzulPrimario
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.TextUnit
+import androidx.compose.ui.unit.sp
 
 @Composable
 fun BotonSaludPlus(
@@ -81,20 +85,21 @@ fun CampoTextoSaludPlus(
 @Composable
 fun AvatarIniciales(
     iniciales: String,
-    modifier: Modifier = Modifier
+    tamano: Dp = 44.dp, // Valor por defecto
+    fontSize: TextUnit = 16.sp // Valor por defecto
 ) {
     Box(
-        modifier = modifier
-            .size(64.dp)
+        modifier = Modifier
+            .size(tamano)
             .clip(CircleShape)
-            .background(AzulClaroFondo),
+            .background(Color(0xFFD0E1FD)),
         contentAlignment = Alignment.Center
     ) {
         Text(
             text = iniciales,
             fontWeight = FontWeight.Bold,
             color = AzulPrimario,
-            fontSize = 20.sp
+            fontSize = fontSize
         )
     }
 }

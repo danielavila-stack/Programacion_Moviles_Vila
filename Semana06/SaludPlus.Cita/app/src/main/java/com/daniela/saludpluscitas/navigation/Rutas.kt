@@ -14,4 +14,5 @@ sealed class Rutas(val ruta: String) {
     object DetalleCita : Rutas("detalle_cita")
     object Resultados : Rutas("resultados")
     object Perfil : Rutas("perfil")
+    object Notificaciones : Rutas("notificaciones")
 }

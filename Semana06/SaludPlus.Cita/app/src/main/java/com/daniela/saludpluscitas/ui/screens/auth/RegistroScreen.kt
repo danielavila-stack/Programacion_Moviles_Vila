@@ -15,7 +15,6 @@ import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Phone
-import androidx.compose.material3.Checkbox
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -26,6 +25,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -47,7 +47,6 @@ fun RegistroScreen(
     var telefono by remember { mutableStateOf("") }
     var correo by remember { mutableStateOf("") }
     var contrasena by remember { mutableStateOf("") }
-    var aceptoTerminos by remember { mutableStateOf(false) }
     var errorMensaje by remember { mutableStateOf("") }
 
     Column(
@@ -57,21 +56,17 @@ fun RegistroScreen(
             .verticalScroll(rememberScrollState()),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(modifier = Modifier.height(16.dp))
 
-        Text(
-            text = "Crear Cuenta",
-            fontSize = 28.sp,
-            fontWeight = FontWeight.Bold,
-            color = AzulPrimario
-        )
+        Text(text = "Crear cuenta", fontSize = 26.sp, fontWeight = FontWeight.Bold)
+        Text(text = "Regístrate para agendar tus citas", fontSize = 14.sp, color = Color.Gray)
 
         Spacer(modifier = Modifier.height(24.dp))
 
         CampoTextoSaludPlus(
             valor = nombre,
-            onValorChange = { nombre = it },
-            label = "Nombre Completo",
+            onValorChange = { nombre = it; errorMensaje = "" },
+            label = "Nombre completo",
             icon = Icons.Default.Person
         )
 
@@ -79,8 +74,8 @@ fun RegistroScreen(
 
         CampoTextoSaludPlus(
             valor = dni,
-            onValorChange = { dni = it },
-            label = "DNI",
+            onValorChange = { dni = it; errorMensaje = "" },
+            label = "DNI (8 dígitos)",
             icon = Icons.Default.Person,
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
         )
@@ -89,7 +84,7 @@ fun RegistroScreen(
 
         CampoTextoSaludPlus(
             valor = telefono,
-            onValorChange = { telefono = it },
+            onValorChange = { telefono = it; errorMensaje = "" },
             label = "Teléfono",
             icon = Icons.Default.Phone,
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone)
@@ -99,8 +94,8 @@ fun RegistroScreen(
 
         CampoTextoSaludPlus(
             valor = correo,
-            onValorChange = { correo = it },
-            label = "Correo Electrónico",
+            onValorChange = { correo = it; errorMensaje = "" },
+            label = "Correo (opcional)",
             icon = Icons.Default.Email,
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email)
         )
@@ -109,72 +104,50 @@ fun RegistroScreen(
 
         CampoTextoSaludPlus(
             valor = contrasena,
-            onValorChange = { contrasena = it },
+            onValorChange = { contrasena = it; errorMensaje = "" },
             label = "Contraseña",
             icon = Icons.Default.Lock,
-            esContrasena = true
+            esContrasena = true,
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password)
         )
 
-        Spacer(modifier = Modifier.height(12.dp))
-
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Checkbox(
-                checked = aceptoTerminos,
-                onCheckedChange = { aceptoTerminos = it }
-            )
-            Text(text = "Acepto los ", fontSize = 13.sp)
-            TextButton(
-                onClick = onIrATerminos,
-                modifier = Modifier.padding(0.dp)
-            ) {
-                Text(text = "Términos y Condiciones", fontSize = 13.sp, color = AzulPrimario)
-            }
-        }
-
         if (errorMensaje.isNotEmpty()) {
-            Text(
-                text = errorMensaje,
-                color = MaterialTheme.colorScheme.error,
-                fontSize = 13.sp,
-                modifier = Modifier.padding(vertical = 8.dp)
-            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(text = errorMensaje, color = MaterialTheme.colorScheme.error, fontSize = 13.sp)
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(20.dp))
 
         BotonSaludPlus(
-            texto = "Registrarse",
+            texto = "Registrarme",
             onClick = {
-                if (nombre.isBlank() || dni.isBlank() || telefono.isBlank() || correo.isBlank() || contrasena.isBlank()) {
-                    errorMensaje = "Por favor completa todos los campos"
-                } else if (!aceptoTerminos) {
-                    errorMensaje = "Debes aceptar los términos y condiciones"
+                // Reto 1: Validaciones estrictas de formato DNI y Teléfono
+                if (nombre.isBlank() || dni.isBlank() || telefono.isBlank() || contrasena.isBlank()) {
+                    errorMensaje = "Por favor completa todos los campos requeridos"
+                } else if (dni.length != 8 || !dni.all { it.isDigit() }) {
+                    errorMensaje = "El DNI debe tener exactamente 8 dígitos"
+                } else if (telefono.length != 9 || !telefono.all { it.isDigit() }) {
+                    errorMensaje = "El teléfono debe tener exactamente 9 dígitos"
                 } else {
-                    val nuevo = Usuario(
-                        id = System.currentTimeMillis().toString(),
-                        nombre = nombre,
-                        dni = dni,
-                        telefono = telefono,
-                        correo = correo,
-                        clave = contrasena
+                    val exito = Repositorio.registrarUsuario(
+                        Usuario("1", nombre, dni, telefono, correo, contrasena)
                     )
-                    val exito = Repositorio.registrarUsuario(nuevo)
-                    if (exito) {
-                        onRegistroExitoso()
-                    } else {
-                        errorMensaje = "El correo o teléfono ya están registrados"
-                    }
+                    if (exito) onRegistroExitoso() else errorMensaje = "El registro falló"
                 }
             }
         )
 
         Spacer(modifier = Modifier.height(12.dp))
 
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text("Al registrarte aceptas los ", fontSize = 12.sp, color = Color.Gray)
+            TextButton(onClick = onIrATerminos) {
+                Text("Términos y Condiciones", fontSize = 12.sp, color = AzulPrimario)
+            }
+        }
+
         TextButton(onClick = onIrALogin) {
-            Text("¿Ya tienes cuenta? Inicia sesión")
+            Text("¿Ya tienes cuenta? Iniciar sesión")
         }
     }
 }
