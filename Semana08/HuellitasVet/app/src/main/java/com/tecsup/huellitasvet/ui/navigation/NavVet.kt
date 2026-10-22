@@ -47,12 +47,15 @@ import com.tecsup.huellitasvet.ui.dueno.FormularioMascotaScreen
 import com.tecsup.huellitasvet.ui.dueno.InicioScreen
 import com.tecsup.huellitasvet.ui.dueno.LoginScreen
 import com.tecsup.huellitasvet.ui.dueno.MascotasScreen
+import com.tecsup.huellitasvet.ui.dueno.MisCitasScreen
 import com.tecsup.huellitasvet.ui.dueno.PedirCitaScreen
+import com.tecsup.huellitasvet.ui.dueno.PerfilScreen
 import com.tecsup.huellitasvet.ui.dueno.SplashScreen
 import com.tecsup.huellitasvet.ui.theme.VetTheme
 import com.tecsup.huellitasvet.ui.veterinario.ServiciosScreen
 import com.tecsup.huellitasvet.viewmodel.InicioViewModel
 import com.tecsup.huellitasvet.viewmodel.MascotaViewModel
+import com.tecsup.huellitasvet.viewmodel.MisCitasViewModel
 import com.tecsup.huellitasvet.viewmodel.PedirCitaViewModel
 import com.tecsup.huellitasvet.viewmodel.ServiciosViewModel
 import com.tecsup.huellitasvet.viewmodel.SesionViewModel
@@ -176,18 +179,23 @@ fun NavVet(app: VetApp) {
                 }
             }
             composable(Rutas.MIS_CITAS) {
-                // TODO (Paso 10): MisCitasScreen
+                val vm: MisCitasViewModel = viewModel(
+                    factory = VetViewModelFactory { MisCitasViewModel(app.repository, usuario?.id ?: 0) }
+                )
                 VetTheme(Rol.CLIENTE, oscuro) {
                     ScaffoldDueno(nav, Rutas.MIS_CITAS) {
-                        PantallaTemporal("Mis citas", onCerrarSesion = ::cerrarSesion)
+                        MisCitasScreen(vm = vm, onPedirCita = { nav.navigate(Rutas.pedirCita()) })
                     }
                 }
             }
             composable(Rutas.PERFIL) {
-                // TODO (Paso 13): PerfilScreen
                 VetTheme(Rol.CLIENTE, oscuro) {
                     ScaffoldDueno(nav, Rutas.PERFIL) {
-                        PantallaTemporal(usuario?.nombre.orEmpty(), onCerrarSesion = ::cerrarSesion)
+                        PerfilScreen(
+                            nombre = usuario?.nombre.orEmpty(),
+                            correo = usuario?.correo.orEmpty(),
+                            onCerrarSesion = ::cerrarSesion
+                        )
                     }
                 }
             }
