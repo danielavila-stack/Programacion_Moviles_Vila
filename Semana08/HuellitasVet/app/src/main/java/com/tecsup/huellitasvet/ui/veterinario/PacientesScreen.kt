@@ -11,8 +11,10 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
@@ -24,6 +26,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -38,6 +41,7 @@ import com.tecsup.huellitasvet.ui.components.diaMes
 import com.tecsup.huellitasvet.ui.components.nombreCorto
 import com.tecsup.huellitasvet.ui.components.pelajePara
 import com.tecsup.huellitasvet.ui.components.textoEdad
+import com.tecsup.huellitasvet.viewmodel.OrdenPacientes
 import com.tecsup.huellitasvet.viewmodel.PacientesViewModel
 
 // Filtros: Todos / Perros / Gatos / Otros
@@ -47,8 +51,7 @@ private val FILTROS = listOf<Pair<String, Especie?>>(
 
 @Composable
 fun PacientesScreen(vm: PacientesViewModel, onVerPaciente: (Int) -> Unit) {
-    val texto by vm.texto.collectAsStateWithLifecycle()
-    val especie by vm.especie.collectAsStateWithLifecycle()
+    val filtros by vm.filtros.collectAsStateWithLifecycle()
     val pacientes by vm.pacientes.collectAsStateWithLifecycle()
     val ultimaVisita by vm.ultimaVisita.collectAsStateWithLifecycle()
 
@@ -62,24 +65,39 @@ fun PacientesScreen(vm: PacientesViewModel, onVerPaciente: (Int) -> Unit) {
                 .padding(padding)
                 .padding(horizontal = 16.dp)
         ) {
-            VetTextField(texto, vm::buscar, "Buscar mascota o dueño...", icono = Icons.Filled.Search)
+            VetTextField(filtros.texto, vm::buscar, "Buscar mascota, dueño o raza...", icono = Icons.Filled.Search)
             Spacer(Modifier.height(10.dp))
+            // Especie
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 FILTROS.forEach { (etiqueta, e) ->
-                    val activo = e == especie
-                    Surface(
-                        onClick = { vm.filtrar(e) },
-                        shape = RoundedCornerShape(50),
-                        color = if (activo) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surface,
-                        contentColor = if (activo) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface,
-                        border = if (activo) null else BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
-                    ) {
-                        Text(
-                            etiqueta,
-                            style = MaterialTheme.typography.labelLarge,
-                            modifier = Modifier.padding(horizontal = 14.dp, vertical = 7.dp)
-                        )
-                    }
+                    Chip(etiqueta, activo = e == filtros.especie, onClick = { vm.filtrar(e) })
+                }
+            }
+            Spacer(Modifier.height(8.dp))
+            // Orden y visitas recientes
+            Row(
+                Modifier.horizontalScroll(rememberScrollState()),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Chip("A–Z", activo = filtros.orden == OrdenPacientes.NOMBRE, onClick = { vm.ordenar(OrdenPacientes.NOMBRE) })
+                Chip("Última visita", activo = filtros.orden == OrdenPacientes.ULTIMA_VISITA, onClick = { vm.ordenar(OrdenPacientes.ULTIMA_VISITA) })
+                Chip("Sin visitas recientes", activo = filtros.sinVisitasRecientes, onClick = vm::alternarSinVisitas)
+            }
+            // Contador y limpiar
+            Row(
+                Modifier
+                    .fillMaxWidth()
+                    .height(40.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    if (pacientes.size == 1) "1 paciente" else "${pacientes.size} pacientes",
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.weight(1f)
+                )
+                if (filtros.activos) {
+                    TextButton(onClick = vm::limpiarFiltros) { Text("Limpiar filtros") }
                 }
             }
             if (pacientes.isEmpty()) {
@@ -93,7 +111,7 @@ fun PacientesScreen(vm: PacientesViewModel, onVerPaciente: (Int) -> Unit) {
                 }
             }
             LazyColumn(
-                contentPadding = PaddingValues(vertical = 12.dp),
+                contentPadding = PaddingValues(bottom = 12.dp),
                 verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
                 items(pacientes, key = { it.mascota.id }) { p ->
@@ -139,5 +157,22 @@ fun PacientesScreen(vm: PacientesViewModel, onVerPaciente: (Int) -> Unit) {
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun Chip(texto: String, activo: Boolean, onClick: () -> Unit) {
+    Surface(
+        onClick = onClick,
+        shape = RoundedCornerShape(50),
+        color = if (activo) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surface,
+        contentColor = if (activo) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface,
+        border = if (activo) null else BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
+    ) {
+        Text(
+            texto,
+            style = MaterialTheme.typography.labelLarge,
+            modifier = Modifier.padding(horizontal = 14.dp, vertical = 7.dp)
+        )
     }
 }
