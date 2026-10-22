@@ -1,21 +1,36 @@
 package com.tecsup.huellitasvet.ui.navigation
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CalendarMonth
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Pets
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationBarItemDefaults
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -25,10 +40,13 @@ import com.tecsup.huellitasvet.VetApp
 import com.tecsup.huellitasvet.model.Rol
 import com.tecsup.huellitasvet.ui.components.EstiloBoton
 import com.tecsup.huellitasvet.ui.components.VetButton
+import com.tecsup.huellitasvet.ui.dueno.InicioScreen
 import com.tecsup.huellitasvet.ui.dueno.LoginScreen
+import com.tecsup.huellitasvet.ui.dueno.MascotasScreen
 import com.tecsup.huellitasvet.ui.dueno.SplashScreen
 import com.tecsup.huellitasvet.ui.theme.VetTheme
 import com.tecsup.huellitasvet.ui.veterinario.ServiciosScreen
+import com.tecsup.huellitasvet.viewmodel.InicioViewModel
 import com.tecsup.huellitasvet.viewmodel.ServiciosViewModel
 import com.tecsup.huellitasvet.viewmodel.SesionViewModel
 import com.tecsup.huellitasvet.viewmodel.VetViewModelFactory
@@ -74,10 +92,47 @@ fun NavVet(app: VetApp) {
 
         // Grafo del dueño
         navigation(startDestination = Rutas.INICIO, route = Rutas.GRAFO_DUENO) {
-            composable(Rutas.INICIO) {
-                // TODO (Paso 7): InicioScreen
+            composable(Rutas.INICIO) { entry ->
+                val vm = inicioVm(nav, entry, app, usuario?.id ?: 0)
                 VetTheme(Rol.CLIENTE, oscuro) {
-                    PantallaTemporal("Hola, ${usuario?.nombre.orEmpty()}", onCerrarSesion = ::cerrarSesion)
+                    ScaffoldDueno(nav, Rutas.INICIO) {
+                        InicioScreen(
+                            vm = vm,
+                            nombreDueno = usuario?.nombre.orEmpty(),
+                            onVerMascota = { /* TODO (Paso 8): nav.navigate(Rutas.fichaMascota(it)) */ },
+                            onVerTodas = { nav.irATab(Rutas.MASCOTAS) },
+                            onAgregarMascota = { /* TODO (Paso 8): nav.navigate(Rutas.formMascota()) */ },
+                            onPedirCita = { /* TODO (Paso 9): nav.navigate(Rutas.pedirCita()) */ }
+                        )
+                    }
+                }
+            }
+            composable(Rutas.MASCOTAS) { entry ->
+                val vm = inicioVm(nav, entry, app, usuario?.id ?: 0)
+                VetTheme(Rol.CLIENTE, oscuro) {
+                    ScaffoldDueno(nav, Rutas.MASCOTAS) {
+                        MascotasScreen(
+                            vm = vm,
+                            onVerMascota = { /* TODO (Paso 8): nav.navigate(Rutas.fichaMascota(it)) */ },
+                            onAgregar = { /* TODO (Paso 8): nav.navigate(Rutas.formMascota()) */ }
+                        )
+                    }
+                }
+            }
+            composable(Rutas.MIS_CITAS) {
+                // TODO (Paso 10): MisCitasScreen
+                VetTheme(Rol.CLIENTE, oscuro) {
+                    ScaffoldDueno(nav, Rutas.MIS_CITAS) {
+                        PantallaTemporal("Mis citas", onCerrarSesion = ::cerrarSesion)
+                    }
+                }
+            }
+            composable(Rutas.PERFIL) {
+                // TODO (Paso 13): PerfilScreen
+                VetTheme(Rol.CLIENTE, oscuro) {
+                    ScaffoldDueno(nav, Rutas.PERFIL) {
+                        PantallaTemporal(usuario?.nombre.orEmpty(), onCerrarSesion = ::cerrarSesion)
+                    }
                 }
             }
         }
@@ -114,6 +169,65 @@ private fun NavHostController.irLimpiando(ruta: String) {
     navigate(ruta) {
         popUpTo(graph.id) { inclusive = true }
         launchSingleTop = true
+    }
+}
+
+// Cambia de pestaña de la barra inferior sin apilar pantallas repetidas
+private fun NavHostController.irATab(ruta: String) {
+    navigate(ruta) {
+        popUpTo(Rutas.INICIO) { saveState = true }
+        launchSingleTop = true
+        restoreState = true
+    }
+}
+
+// InicioViewModel compartido por Inicio y Mascotas (vive mientras exista el grafo del dueño)
+@Composable
+private fun inicioVm(nav: NavHostController, entry: NavBackStackEntry, app: VetApp, duenoId: Int): InicioViewModel {
+    val grafo = remember(entry) { nav.getBackStackEntry(Rutas.GRAFO_DUENO) }
+    return viewModel(
+        viewModelStoreOwner = grafo,
+        factory = VetViewModelFactory { InicioViewModel(app.repository, duenoId) }
+    )
+}
+
+private data class ItemBarra(val ruta: String, val texto: String, val icono: ImageVector)
+
+private val BARRA_DUENO = listOf(
+    ItemBarra(Rutas.INICIO, "Inicio", Icons.Filled.Home),
+    ItemBarra(Rutas.MASCOTAS, "Mascotas", Icons.Filled.Pets),
+    ItemBarra(Rutas.MIS_CITAS, "Citas", Icons.Filled.CalendarMonth),
+    ItemBarra(Rutas.PERFIL, "Perfil", Icons.Filled.Person)
+)
+
+// Scaffold con NavigationBar de 4 ítems para el dueño
+@Composable
+private fun ScaffoldDueno(nav: NavHostController, actual: String, contenido: @Composable () -> Unit) {
+    Scaffold(
+        bottomBar = {
+            NavigationBar(containerColor = MaterialTheme.colorScheme.surface) {
+                BARRA_DUENO.forEach { item ->
+                    NavigationBarItem(
+                        selected = item.ruta == actual,
+                        onClick = { if (item.ruta != actual) nav.irATab(item.ruta) },
+                        icon = { Icon(item.icono, contentDescription = null) },
+                        label = { Text(item.texto) },
+                        colors = NavigationBarItemDefaults.colors(
+                            selectedIconColor = MaterialTheme.colorScheme.primary,
+                            selectedTextColor = MaterialTheme.colorScheme.primary,
+                            indicatorColor = MaterialTheme.colorScheme.primaryContainer
+                        )
+                    )
+                }
+            }
+        },
+        containerColor = MaterialTheme.colorScheme.background
+    ) { padding ->
+        Box(
+            Modifier
+                .padding(padding)
+                .consumeWindowInsets(padding)
+        ) { contenido() }
     }
 }
 
