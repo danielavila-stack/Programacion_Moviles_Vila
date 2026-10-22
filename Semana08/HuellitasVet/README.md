@@ -1,4 +1,6 @@
-# HuellitasVet — Laboratorio 08 · MVVM + Room (Rama `sin-ia`)
+# HuellitasVet — Laboratorio 08 · MVVM + Room (Rama `con-ia`)
+
+Esta rama contiene la app de la Fase 1 más las mejoras de la Fase 2 hechas con IA (ver [Fase 2](#fase-2--mejoras-con-ia-rama-con-ia) y [PROMPTS.md](PROMPTS.md)).
 
 App de una veterinaria con dos perfiles en el mismo dispositivo. El **Dueño** registra a sus mascotas, pide citas eligiendo servicio, fecha y hora, y consulta el historial clínico de cada mascota. El **Veterinario** ve el panel de la clínica y la agenda, confirma citas, registra la atención (diagnóstico, tratamiento y peso), consulta a los pacientes y administra los servicios. Ambos perfiles comparten la misma base de datos Room: cuando el veterinario registra una atención, el dueño la ve en el historial de su mascota al instante.
 
@@ -318,3 +320,63 @@ El precio de la cita es una foto del momento en que se pidió. Si después la cl
 ### ¿Esta función cambia datos una sola vez o debe avisar cuando cambian?
 
 Esa pregunta me ayudó a decidir el tipo de cada función. Si solo hace una acción, como guardar una mascota, crear una cita o registrar una atención, es suspend. Si la pantalla necesita enterarse cada vez que cambian los datos, como la lista de citas, el historial o los contadores del panel, devuelve un Flow sin suspend. Por eso, cuando el veterinario confirma una cita, el dueño la ve confirmada sin recargar nada.
+
+## Fase 2 · Mejoras con IA (rama `con-ia`)
+
+Hice tres mejoras con Claude (Anthropic) en Claude Code, sin romper la arquitectura MVVM + Repository. Cada una tiene su commit y los prompts están en [PROMPTS.md](PROMPTS.md).
+
+| Commit | Mejora | Capas que cambian |
+|---|---|---|
+| A · `ia: agrega grafico de peso en la ficha de la mascota` | La ficha muestra una línea con el peso registrado en cada atención | DAO + Repository + ViewModel + View |
+| B · `ia: agrega reprogramacion de citas` | El dueño cambia fecha y hora de una cita PENDIENTE o CONFIRMADA respetando horarios libres y la regla de 2 horas | DAO + Repository + ViewModel + View |
+| C · `ia: agrega busqueda de pacientes` | Búsqueda avanzada: mascota, dueño o raza sin importar tildes, filtro por especie y por visitas recientes, orden y contador | ViewModel + View |
+| D · `docs: agrega PROMPTS.md` | Prompts, reflexión y esta sección del README | Documentación |
+
+### Capturas de las mejoras
+
+| 21. Gráfico de peso (A) | 22. Mis citas con Reprogramar (B) | 23. Reprogramar cita (B) |
+| :---: | :---: | :---: |
+| ![Gráfico de peso en la ficha](capturas/21_grafico_peso.png) | ![Mis citas con botón Reprogramar](capturas/22_mis_citas_reprogramar.png) | ![Reprogramar cita](capturas/23_reprogramar_cita.png) |
+
+| 24. Pacientes ordenados por última visita (C) | 25. Filtro "Sin visitas recientes" (C) |
+| :---: | :---: |
+| ![Orden por última visita](capturas/24_busqueda_ultima_visita.png) | ![Sin visitas recientes](capturas/25_busqueda_sin_visitas.png) |
+
+### Cambios en la base de datos
+
+- Columnas nuevas: ninguna. Ninguna mejora necesitó cambiar o agregar una entidad, así que la base sigue en la versión 1 y no hace falta una `Migration`. Si una mejora futura agrega una columna (por ejemplo, la fecha del próximo control), se sube a `version = 2` con una `Migration(1, 2)` que haga `ALTER TABLE` para no perder los datos.
+- Consultas y funciones nuevas (cada una declarada primero en la interface `VetRepository`):
+
+| Mejora | DAO | Repository | SQL |
+|---|---|---|---|
+| A | `CitaDao.observarPesos(mascotaId): Flow<List<PuntoPeso>>` | `observarPesos(mascotaId)` | `SELECT fecha AS fecha, pesoRegistrado AS peso FROM citas WHERE mascotaId = :mascotaId AND estado = 'ATENDIDA' AND pesoRegistrado IS NOT NULL ORDER BY fecha, hora` |
+| B | `CitaDao.reprogramar(id, fecha, hora)` (suspend) | `reprogramarCita(id, fecha, hora)` | `UPDATE citas SET fecha = :fecha, hora = :hora, estado = 'PENDIENTE' WHERE id = :id` |
+| C | Sin cambios (usa `observarTodasLasMascotas` y `observarUltimasVisitas` de la Fase 1) | Sin cambios | — |
+
+- Modelo nuevo: `PuntoPeso(fecha, peso)`, resultado de la consulta del gráfico (no es una tabla).
+
+### Reglas nuevas y dónde viven
+
+| Regla | Detalle | Dónde vive |
+|---|---|---|
+| Gráfico de peso | Solo citas ATENDIDAS con peso, de la más antigua a la más reciente; con menos de 2 pesos se muestra un aviso en lugar del gráfico | `CitaDao.observarPesos` + `MascotaViewModel.pesos` |
+| Reprogramar: quién | Solo citas PENDIENTE o CONFIRMADA y si faltan más de 2 horas (la misma regla que cancelar) | `MisCitasViewModel.validarReprogramacion` y `ReprogramarCitaViewModel` |
+| Reprogramar: nuevo horario | Fecha de hoy a 7 días; si es hoy, solo horas futuras; horario libre (los ocupados en gris) y distinto al actual; se vuelve a consultar antes de guardar | `ReprogramarCitaViewModel.confirmar` |
+| Reprogramar: estado | La cita reprogramada vuelve a PENDIENTE para que la clínica confirme el nuevo horario; si la clínica no acepta citas, no se puede reprogramar | `ReprogramarCitaViewModel` + `CitaDao.reprogramar` |
+| Búsqueda de pacientes | Texto en mascota, dueño o raza sin tildes ni mayúsculas, combinado con especie, "Sin visitas recientes" (6 meses o nunca atendida) y orden por nombre o última visita | `PacientesViewModel` (`combine` + `FiltrosPacientes`) |
+
+### Pruebas de la Fase 2
+
+| Prueba | Resultado esperado | Estado |
+|---|---|---|
+| Ficha de Luna (dueño) | Gráfico con 4.0, 4.1 y 4.2 kg y el cambio "+0.2 kg" | Cumple |
+| Veterinario atiende a Luna con 4.4 kg | El gráfico agrega el cuarto punto solo y muestra "+0.4 kg" | Cumple |
+| Ficha de Max (1 atención) | Aviso "Se necesitan al menos 2 atenciones con peso para ver la evolución" | Cumple |
+| Reprogramar cita de Max (Vie 23 10:00) | En la nueva fecha los horarios ocupados salen grises; al confirmar queda Jue 22 09:30 como PENDIENTE | Cumple |
+| Agenda del veterinario tras reprogramar | La cita aparece en su nuevo horario | Cumple |
+| Reprogramar una cita a menos de 2 horas | "Ya no puedes reprogramar esta cita" y no se abre la pantalla | Cumple |
+| Buscar "siames" y "LABRADOR" | Encuentra a Luna y a Max (sin importar tildes ni mayúsculas) | Cumple |
+| Ordenar por última visita | Luna, Michi, Max y al final Rocky (sin visitas) | Cumple |
+| Filtro "Sin visitas recientes" | Solo Rocky; con "Gatos" el contador marca 0 pacientes | Cumple |
+| Limpiar filtros | Vuelven los 4 pacientes ordenados A–Z | Cumple |
+| Condición MVVM | La View no usa DAO ni Repository y cada función nueva del Repository está primero en la interface | Cumple |
