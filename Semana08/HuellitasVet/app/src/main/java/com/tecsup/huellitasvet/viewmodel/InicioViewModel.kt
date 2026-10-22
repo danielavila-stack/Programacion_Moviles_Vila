@@ -15,6 +15,8 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
 
+data class ResumenDueno(val proximas: Int = 0, val atenciones: Int = 0)
+
 // Inicio del dueño: sus mascotas y su próxima cita.
 class InicioViewModel(repo: VetRepository, duenoId: Int) : ViewModel() {
 
@@ -32,6 +34,20 @@ class InicioViewModel(repo: VetRepository, duenoId: Int) : ViewModel() {
             }.minByOrNull { fechaHora(it) }
         }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
+
+    // Contadores del perfil: citas próximas y atenciones
+    val resumen: StateFlow<ResumenDueno> = repo.observarCitasDeDueno(duenoId)
+        .map { citas ->
+            val ahora = LocalDateTime.now()
+            ResumenDueno(
+                proximas = citas.count {
+                    val e = EstadoCita.desde(it.cita.estado)
+                    (e == EstadoCita.PENDIENTE || e == EstadoCita.CONFIRMADA) && !fechaHora(it).isBefore(ahora)
+                },
+                atenciones = citas.count { EstadoCita.desde(it.cita.estado) == EstadoCita.ATENDIDA }
+            )
+        }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), ResumenDueno())
 
     // Accesos rápidos: solo los servicios activos
     val servicios: StateFlow<List<Servicio>> = repo.observarServiciosActivos()

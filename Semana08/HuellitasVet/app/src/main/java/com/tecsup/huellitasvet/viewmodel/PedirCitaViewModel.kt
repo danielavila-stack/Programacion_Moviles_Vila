@@ -7,6 +7,7 @@ import com.tecsup.huellitasvet.data.local.entity.Servicio
 import com.tecsup.huellitasvet.data.repository.VetRepository
 import com.tecsup.huellitasvet.model.Horarios
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -25,8 +26,13 @@ import java.time.LocalTime
 class PedirCitaViewModel(
     private val repo: VetRepository,
     duenoId: Int,
-    mascotaInicial: Int
+    mascotaInicial: Int,
+    aceptaCitas: Flow<Boolean>
 ) : ViewModel() {
+
+    // Ajuste del veterinario (DataStore): si está apagado, no se pueden pedir citas
+    val clinicaAbierta: StateFlow<Boolean> = aceptaCitas
+        .stateIn(viewModelScope, SharingStarted.Eagerly, true)
 
     companion object {
         const val DIAS_ADELANTE = 7L
@@ -78,7 +84,7 @@ class PedirCitaViewModel(
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptySet())
 
     val puedeConfirmar: StateFlow<Boolean> =
-        combine(_mascotaId, _servicioId, _hora) { m, s, h -> m > 0 && s > 0 && h != null }
+        combine(_mascotaId, _servicioId, _hora, clinicaAbierta) { m, s, h, abierta -> abierta && m > 0 && s > 0 && h != null }
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
 
     fun elegirMascota(id: Int) { _mascotaId.value = id }
@@ -104,6 +110,7 @@ class PedirCitaViewModel(
         val f = _fecha.value
         val h = _hora.value
         when {
+            !clinicaAbierta.value -> { _mensaje.value = "La clínica no está recibiendo citas"; return }
             mascota == null -> { _mensaje.value = "Elige una de tus mascotas"; return }
             servicio == null || !servicio.activo -> { _mensaje.value = "Elige un servicio disponible"; return }
             f.isBefore(LocalDate.now()) || f.isAfter(LocalDate.now().plusDays(DIAS_ADELANTE)) -> {

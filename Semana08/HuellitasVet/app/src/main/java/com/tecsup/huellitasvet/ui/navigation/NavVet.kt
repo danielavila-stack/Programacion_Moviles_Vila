@@ -1,12 +1,12 @@
 package com.tecsup.huellitasvet.ui.navigation
 
-import androidx.compose.foundation.layout.Arrangement
+import android.graphics.Color as AndroidColor
+import androidx.activity.ComponentActivity
+import androidx.activity.SystemBarStyle
+import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.consumeWindowInsets
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.BarChart
 import androidx.compose.material.icons.filled.CalendarMonth
@@ -21,16 +21,14 @@ import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavBackStackEntry
@@ -43,8 +41,6 @@ import androidx.navigation.compose.navigation
 import androidx.navigation.compose.rememberNavController
 import com.tecsup.huellitasvet.VetApp
 import com.tecsup.huellitasvet.model.Rol
-import com.tecsup.huellitasvet.ui.components.EstiloBoton
-import com.tecsup.huellitasvet.ui.components.VetButton
 import com.tecsup.huellitasvet.ui.dueno.FichaMascotaScreen
 import com.tecsup.huellitasvet.ui.dueno.FormularioMascotaScreen
 import com.tecsup.huellitasvet.ui.dueno.InicioScreen
@@ -56,7 +52,9 @@ import com.tecsup.huellitasvet.ui.dueno.PerfilScreen
 import com.tecsup.huellitasvet.ui.dueno.SplashScreen
 import com.tecsup.huellitasvet.ui.theme.VetTheme
 import com.tecsup.huellitasvet.ui.veterinario.AgendaScreen
+import com.tecsup.huellitasvet.ui.veterinario.AjustesScreen
 import com.tecsup.huellitasvet.ui.veterinario.AtenderCitaScreen
+import com.tecsup.huellitasvet.ui.veterinario.FormularioServicioScreen
 import com.tecsup.huellitasvet.ui.veterinario.PacientesScreen
 import com.tecsup.huellitasvet.ui.veterinario.PanelScreen
 import com.tecsup.huellitasvet.viewmodel.AtenderCitaViewModel
@@ -89,6 +87,17 @@ fun NavVet(app: VetApp) {
     fun cerrarSesion() {
         sesionVm.cerrarSesion()
         nav.irLimpiando(Rutas.LOGIN)
+    }
+
+    // Guarda el otro perfil y navega a su grafo limpiando la pila
+    fun cambiarPerfil() = sesionVm.cambiarPerfil(onCambiado = ::irAPrincipal)
+
+    // Íconos de la barra de estado legibles en modo claro y oscuro
+    val activity = LocalContext.current as? ComponentActivity
+    LaunchedEffect(oscuro) {
+        val estilo = if (oscuro) SystemBarStyle.dark(AndroidColor.TRANSPARENT)
+        else SystemBarStyle.light(AndroidColor.TRANSPARENT, AndroidColor.TRANSPARENT)
+        activity?.enableEdgeToEdge(statusBarStyle = estilo, navigationBarStyle = estilo)
     }
 
     NavHost(navController = nav, startDestination = Rutas.SPLASH) {
@@ -179,7 +188,9 @@ fun NavVet(app: VetApp) {
             ) { entry ->
                 val mascotaId = entry.arguments?.getInt("mascotaId") ?: 0
                 val vm: PedirCitaViewModel = viewModel(
-                    factory = VetViewModelFactory { PedirCitaViewModel(app.repository, usuario?.id ?: 0, mascotaId) }
+                    factory = VetViewModelFactory {
+                        PedirCitaViewModel(app.repository, usuario?.id ?: 0, mascotaId, app.preferencias.aceptarCitas)
+                    }
                 )
                 VetTheme(Rol.CLIENTE, oscuro) {
                     PedirCitaScreen(
@@ -199,12 +210,14 @@ fun NavVet(app: VetApp) {
                     }
                 }
             }
-            composable(Rutas.PERFIL) {
+            composable(Rutas.PERFIL) { entry ->
+                val inicio = inicioVm(nav, entry, app, usuario?.id ?: 0)
                 VetTheme(Rol.CLIENTE, oscuro) {
                     ScaffoldDueno(nav, Rutas.PERFIL) {
                         PerfilScreen(
-                            nombre = usuario?.nombre.orEmpty(),
-                            correo = usuario?.correo.orEmpty(),
+                            sesion = sesionVm,
+                            inicio = inicio,
+                            onCambiarPerfil = ::cambiarPerfil,
                             onCerrarSesion = ::cerrarSesion
                         )
                     }
@@ -278,18 +291,30 @@ fun NavVet(app: VetApp) {
                 )
                 VetTheme(Rol.ADMIN, oscuro) {
                     ScaffoldVet(nav, Rutas.SERVICIOS) {
-                        ServiciosScreen(
-                            vm = vm,
-                            onEditar = { /* TODO (Paso 13): nav.navigate(Rutas.formServicio(it)) */ }
-                        )
+                        ServiciosScreen(vm = vm, onEditar = { nav.navigate(Rutas.formServicio(it)) })
                     }
                 }
             }
+            composable(
+                Rutas.FORM_SERVICIO,
+                arguments = listOf(navArgument("id") { type = NavType.IntType; defaultValue = 0 })
+            ) { entry ->
+                val id = entry.arguments?.getInt("id") ?: 0
+                val vm: ServiciosViewModel = viewModel(
+                    factory = VetViewModelFactory { ServiciosViewModel(app.repository) }
+                )
+                VetTheme(Rol.ADMIN, oscuro) {
+                    FormularioServicioScreen(vm = vm, servicioId = id, onListo = { nav.popBackStack() })
+                }
+            }
             composable(Rutas.AJUSTES) {
-                // TODO (Paso 13): AjustesScreen
                 VetTheme(Rol.ADMIN, oscuro) {
                     ScaffoldVet(nav, Rutas.AJUSTES) {
-                        PantallaTemporal(usuario?.nombre.orEmpty(), onCerrarSesion = ::cerrarSesion)
+                        AjustesScreen(
+                            sesion = sesionVm,
+                            onCambiarPerfil = ::cambiarPerfil,
+                            onCerrarSesion = ::cerrarSesion
+                        )
                     }
                 }
             }
@@ -383,23 +408,5 @@ private fun ScaffoldConBarra(
                 .padding(padding)
                 .consumeWindowInsets(padding)
         ) { contenido() }
-    }
-}
-
-// Marcador mientras se construyen las pantallas principales de cada perfil
-@Composable
-private fun PantallaTemporal(titulo: String, onCerrarSesion: () -> Unit) {
-    Surface(color = MaterialTheme.colorScheme.background, modifier = Modifier.fillMaxSize()) {
-        Column(
-            Modifier
-                .fillMaxSize()
-                .safeDrawingPadding()
-                .padding(24.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterVertically),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Text(titulo, style = MaterialTheme.typography.headlineSmall)
-            VetButton("Cerrar sesión", onClick = onCerrarSesion, estilo = EstiloBoton.PELIGRO)
-        }
     }
 }

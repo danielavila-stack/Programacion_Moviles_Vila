@@ -14,6 +14,10 @@ interface UsuarioDao {
     @Query("SELECT * FROM usuarios WHERE id = :id")
     suspend fun obtener(id: Int): Usuario?
 
+    // Primera cuenta de un rol (para "Cambiar de perfil" en modo práctica)
+    @Query("SELECT * FROM usuarios WHERE rol = :rol ORDER BY id LIMIT 1")
+    suspend fun primeroConRol(rol: String): Usuario?
+
     @Insert
     suspend fun insertarTodos(lista: List<Usuario>)
 

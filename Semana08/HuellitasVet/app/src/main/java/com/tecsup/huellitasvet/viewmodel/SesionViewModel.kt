@@ -33,6 +33,15 @@ class SesionViewModel(
     val modoOscuro: StateFlow<Boolean> = prefs.modoOscuro
         .stateIn(viewModelScope, SharingStarted.Eagerly, false)
 
+    val notificaciones: StateFlow<Boolean> = prefs.notificaciones
+        .stateIn(viewModelScope, SharingStarted.Eagerly, true)
+
+    val aceptarCitas: StateFlow<Boolean> = prefs.aceptarCitas
+        .stateIn(viewModelScope, SharingStarted.Eagerly, true)
+
+    // Última cuenta usada de cada rol en esta sesión (para volver al cambiar de perfil)
+    private val ultimaCuenta = mutableMapOf<Rol, Usuario>()
+
     init {
         // Si ya hay perfil guardado, se recupera el usuario para saltar el login
         viewModelScope.launch {
@@ -69,6 +78,28 @@ class SesionViewModel(
 
     fun limpiarError() {
         _error.value = null
+    }
+
+    fun guardarModoOscuro(b: Boolean) { viewModelScope.launch { prefs.guardarModoOscuro(b) } }
+    fun guardarNotificaciones(b: Boolean) { viewModelScope.launch { prefs.guardarNotificaciones(b) } }
+    fun guardarAceptarCitas(b: Boolean) { viewModelScope.launch { prefs.guardarAceptarCitas(b) } }
+
+    // Modo práctica: guarda el otro perfil y devuelve su rol para navegar a su grafo
+    fun cambiarPerfil(onCambiado: (Rol) -> Unit) {
+        val actual = _usuarioActual.value ?: return
+        val rolActual = Rol.valueOf(actual.rol)
+        val otro = if (rolActual == Rol.CLIENTE) Rol.ADMIN else Rol.CLIENTE
+        ultimaCuenta[rolActual] = actual
+        viewModelScope.launch {
+            val destino = ultimaCuenta[otro] ?: repo.obtenerUsuarioPorRol(otro)
+            if (destino == null) {
+                _error.value = "No hay una cuenta de ${otro.etiqueta} para practicar"
+                return@launch
+            }
+            prefs.guardarSesion(otro, destino.id)
+            _usuarioActual.value = destino
+            onCambiado(otro)
+        }
     }
 
     fun cerrarSesion() {

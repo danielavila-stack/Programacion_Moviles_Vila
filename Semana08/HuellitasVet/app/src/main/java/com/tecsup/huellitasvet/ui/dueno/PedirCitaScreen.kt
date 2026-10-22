@@ -16,6 +16,8 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -41,6 +43,8 @@ import com.tecsup.huellitasvet.ui.components.fechaCorta
 import com.tecsup.huellitasvet.ui.components.iconoServicio
 import com.tecsup.huellitasvet.ui.components.pelajePara
 import com.tecsup.huellitasvet.ui.components.soles
+import com.tecsup.huellitasvet.ui.theme.AvisoFondo
+import com.tecsup.huellitasvet.ui.theme.AvisoTexto
 import com.tecsup.huellitasvet.viewmodel.PedirCitaViewModel
 
 @Composable
@@ -59,6 +63,7 @@ fun PedirCitaScreen(
     val puedeConfirmar by vm.puedeConfirmar.collectAsStateWithLifecycle()
     val mensaje by vm.mensaje.collectAsStateWithLifecycle()
     val creada by vm.creada.collectAsStateWithLifecycle()
+    val clinicaAbierta by vm.clinicaAbierta.collectAsStateWithLifecycle()
 
     LaunchedEffect(creada) { if (creada) onCitaCreada() }
 
@@ -73,6 +78,24 @@ fun PedirCitaScreen(
                 .verticalScroll(rememberScrollState())
                 .padding(horizontal = 16.dp, vertical = 8.dp)
         ) {
+            if (!clinicaAbierta) {
+                Row(
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(top = 8.dp)
+                        .background(AvisoFondo, RoundedCornerShape(12.dp))
+                        .padding(12.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(Icons.Filled.Info, null, tint = AvisoTexto, modifier = Modifier.size(20.dp))
+                    Text(
+                        "  La clínica no está recibiendo citas",
+                        style = MaterialTheme.typography.titleSmall,
+                        color = AvisoTexto
+                    )
+                }
+            }
+
             // ¿Quién viene?
             Titulo("¿Quién viene?")
             LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {

@@ -10,6 +10,7 @@ import com.tecsup.huellitasvet.data.local.relation.CitaConDetalle
 import com.tecsup.huellitasvet.data.local.relation.MascotaConDueno
 import com.tecsup.huellitasvet.model.ConteoServicio
 import com.tecsup.huellitasvet.model.EstadoCita
+import com.tecsup.huellitasvet.model.Rol
 import com.tecsup.huellitasvet.model.UltimaVisita
 import kotlinx.coroutines.flow.Flow
 
@@ -26,6 +27,8 @@ class VetRepositoryRoom(private val db: VetDatabase) : VetRepository {
         usuarioDao.login(correo.trim(), clave)
 
     override suspend fun obtenerUsuario(id: Int): Usuario? = usuarioDao.obtener(id)
+
+    override suspend fun obtenerUsuarioPorRol(rol: Rol): Usuario? = usuarioDao.primeroConRol(rol.name)
 
     // Servicios (ejemplo resuelto)
     override fun observarServicios(): Flow<List<Servicio>> = servicioDao.observarTodos()
