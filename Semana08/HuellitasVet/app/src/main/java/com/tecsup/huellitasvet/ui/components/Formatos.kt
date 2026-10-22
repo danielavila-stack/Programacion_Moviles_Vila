@@ -21,7 +21,13 @@ fun fechaCorta(fecha: String): String = "${diaSemanaCorto(LocalDate.parse(fecha)
 // "Mié 21 oct 2026"
 fun fechaLarga(fecha: String): String = "${fechaCorta(fecha)} ${LocalDate.parse(fecha).year}"
 
-fun soles(monto: Double): String = "S/ " + String.format(Locale.US, "%.2f", monto)
+fun soles(monto: Double): String = "S/ " + String.format(Locale.US, "%,.2f", monto)
+
+// "Daniela Fransua" -> "Daniela F."
+fun nombreCorto(nombre: String): String {
+    val partes = nombre.trim().split(" ").filter { it.isNotBlank() }
+    return if (partes.size < 2) nombre else "${partes[0]} ${partes[1].first()}."
+}
 
 fun kilos(peso: Double): String = String.format(Locale.US, "%.1f kg", peso)
 

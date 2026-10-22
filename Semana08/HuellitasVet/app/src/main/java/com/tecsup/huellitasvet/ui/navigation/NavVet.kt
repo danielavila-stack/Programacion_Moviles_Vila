@@ -8,10 +8,13 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.BarChart
 import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.LocalOffer
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Pets
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
@@ -52,7 +55,11 @@ import com.tecsup.huellitasvet.ui.dueno.PedirCitaScreen
 import com.tecsup.huellitasvet.ui.dueno.PerfilScreen
 import com.tecsup.huellitasvet.ui.dueno.SplashScreen
 import com.tecsup.huellitasvet.ui.theme.VetTheme
+import com.tecsup.huellitasvet.ui.veterinario.AgendaScreen
+import com.tecsup.huellitasvet.ui.veterinario.PanelScreen
 import com.tecsup.huellitasvet.ui.veterinario.ServiciosScreen
+import com.tecsup.huellitasvet.viewmodel.AgendaViewModel
+import com.tecsup.huellitasvet.viewmodel.PanelViewModel
 import com.tecsup.huellitasvet.viewmodel.InicioViewModel
 import com.tecsup.huellitasvet.viewmodel.MascotaViewModel
 import com.tecsup.huellitasvet.viewmodel.MisCitasViewModel
@@ -204,13 +211,27 @@ fun NavVet(app: VetApp) {
         // Grafo del veterinario
         navigation(startDestination = Rutas.PANEL, route = Rutas.GRAFO_VET) {
             composable(Rutas.PANEL) {
-                // TODO (Paso 11): PanelScreen
+                val vm: PanelViewModel = viewModel(factory = VetViewModelFactory { PanelViewModel(app.repository) })
                 VetTheme(Rol.ADMIN, oscuro) {
-                    PantallaTemporal(
-                        "Panel de ${usuario?.nombre.orEmpty()}",
-                        onCerrarSesion = ::cerrarSesion,
-                        onServicios = { nav.navigate(Rutas.SERVICIOS) }
-                    )
+                    ScaffoldVet(nav, Rutas.PANEL) {
+                        PanelScreen(vm = vm, onVerAgenda = { nav.irATab(Rutas.AGENDA, Rutas.PANEL) })
+                    }
+                }
+            }
+            composable(Rutas.AGENDA) {
+                val vm: AgendaViewModel = viewModel(factory = VetViewModelFactory { AgendaViewModel(app.repository) })
+                VetTheme(Rol.ADMIN, oscuro) {
+                    ScaffoldVet(nav, Rutas.AGENDA) {
+                        AgendaScreen(vm = vm, onAtender = { /* TODO (Paso 12): nav.navigate(Rutas.atenderCita(it)) */ })
+                    }
+                }
+            }
+            composable(Rutas.PACIENTES) {
+                // TODO (Paso 12): PacientesScreen
+                VetTheme(Rol.ADMIN, oscuro) {
+                    ScaffoldVet(nav, Rutas.PACIENTES) {
+                        PantallaTemporal("Pacientes", onCerrarSesion = ::cerrarSesion)
+                    }
                 }
             }
             composable(Rutas.SERVICIOS) {
@@ -218,10 +239,20 @@ fun NavVet(app: VetApp) {
                     factory = VetViewModelFactory { ServiciosViewModel(app.repository) }
                 )
                 VetTheme(Rol.ADMIN, oscuro) {
-                    ServiciosScreen(
-                        vm = vm,
-                        onEditar = { /* TODO (Paso 13): nav.navigate(Rutas.formServicio(it)) */ }
-                    )
+                    ScaffoldVet(nav, Rutas.SERVICIOS) {
+                        ServiciosScreen(
+                            vm = vm,
+                            onEditar = { /* TODO (Paso 13): nav.navigate(Rutas.formServicio(it)) */ }
+                        )
+                    }
+                }
+            }
+            composable(Rutas.AJUSTES) {
+                // TODO (Paso 13): AjustesScreen
+                VetTheme(Rol.ADMIN, oscuro) {
+                    ScaffoldVet(nav, Rutas.AJUSTES) {
+                        PantallaTemporal(usuario?.nombre.orEmpty(), onCerrarSesion = ::cerrarSesion)
+                    }
                 }
             }
         }
@@ -236,10 +267,10 @@ private fun NavHostController.irLimpiando(ruta: String) {
     }
 }
 
-// Cambia de pestaña de la barra inferior: deja solo Inicio debajo, sin apilar pantallas repetidas
-private fun NavHostController.irATab(ruta: String) {
+// Cambia de pestaña de la barra inferior: deja solo la pantalla principal debajo (Inicio o Panel)
+private fun NavHostController.irATab(ruta: String, principal: String = Rutas.INICIO) {
     navigate(ruta) {
-        popUpTo(Rutas.INICIO)
+        popUpTo(principal)
         launchSingleTop = true
     }
 }
@@ -263,16 +294,39 @@ private val BARRA_DUENO = listOf(
     ItemBarra(Rutas.PERFIL, "Perfil", Icons.Filled.Person)
 )
 
-// Scaffold con NavigationBar de 4 ítems para el dueño
+private val BARRA_VET = listOf(
+    ItemBarra(Rutas.PANEL, "Panel", Icons.Filled.BarChart),
+    ItemBarra(Rutas.AGENDA, "Agenda", Icons.Filled.CalendarMonth),
+    ItemBarra(Rutas.PACIENTES, "Pacientes", Icons.Filled.Pets),
+    ItemBarra(Rutas.SERVICIOS, "Servicios", Icons.Filled.LocalOffer),
+    ItemBarra(Rutas.AJUSTES, "Ajustes", Icons.Filled.Settings)
+)
+
+// NavigationBar de 4 ítems para el dueño
 @Composable
-private fun ScaffoldDueno(nav: NavHostController, actual: String, contenido: @Composable () -> Unit) {
+private fun ScaffoldDueno(nav: NavHostController, actual: String, contenido: @Composable () -> Unit) =
+    ScaffoldConBarra(nav, actual, BARRA_DUENO, Rutas.INICIO, contenido)
+
+// NavigationBar de 5 ítems para el veterinario
+@Composable
+private fun ScaffoldVet(nav: NavHostController, actual: String, contenido: @Composable () -> Unit) =
+    ScaffoldConBarra(nav, actual, BARRA_VET, Rutas.PANEL, contenido)
+
+@Composable
+private fun ScaffoldConBarra(
+    nav: NavHostController,
+    actual: String,
+    items: List<ItemBarra>,
+    principal: String,
+    contenido: @Composable () -> Unit
+) {
     Scaffold(
         bottomBar = {
             NavigationBar(containerColor = MaterialTheme.colorScheme.surface) {
-                BARRA_DUENO.forEach { item ->
+                items.forEach { item ->
                     NavigationBarItem(
                         selected = item.ruta == actual,
-                        onClick = { if (item.ruta != actual) nav.irATab(item.ruta) },
+                        onClick = { if (item.ruta != actual) nav.irATab(item.ruta, principal) },
                         icon = { Icon(item.icono, contentDescription = null) },
                         label = { Text(item.texto) },
                         colors = NavigationBarItemDefaults.colors(
@@ -296,11 +350,7 @@ private fun ScaffoldDueno(nav: NavHostController, actual: String, contenido: @Co
 
 // Marcador mientras se construyen las pantallas principales de cada perfil
 @Composable
-private fun PantallaTemporal(
-    titulo: String,
-    onCerrarSesion: () -> Unit,
-    onServicios: (() -> Unit)? = null
-) {
+private fun PantallaTemporal(titulo: String, onCerrarSesion: () -> Unit) {
     Surface(color = MaterialTheme.colorScheme.background, modifier = Modifier.fillMaxSize()) {
         Column(
             Modifier
@@ -311,7 +361,6 @@ private fun PantallaTemporal(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(titulo, style = MaterialTheme.typography.headlineSmall)
-            if (onServicios != null) VetButton("Servicios", onClick = onServicios)
             VetButton("Cerrar sesión", onClick = onCerrarSesion, estilo = EstiloBoton.PELIGRO)
         }
     }
