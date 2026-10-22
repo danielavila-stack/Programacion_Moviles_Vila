@@ -6,6 +6,7 @@ import com.tecsup.huellitasvet.data.local.entity.Mascota
 import com.tecsup.huellitasvet.data.local.relation.CitaConDetalle
 import com.tecsup.huellitasvet.data.repository.VetRepository
 import com.tecsup.huellitasvet.model.Especie
+import com.tecsup.huellitasvet.model.PuntoPeso
 import com.tecsup.huellitasvet.model.Sexo
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -65,6 +66,11 @@ class MascotaViewModel(
     val terminado: StateFlow<Boolean> = _terminado.asStateFlow()
 
     private val historiales = mutableMapOf<Int, StateFlow<List<CitaConDetalle>>>()
+
+    // Puntos del gráfico de peso (uno por cita ATENDIDA con peso), del más antiguo al más reciente
+    val pesos: StateFlow<List<PuntoPeso>> =
+        (if (mascotaId > 0) repo.observarPesos(mascotaId) else flowOf(emptyList()))
+            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     init {
         // Al editar, se llena el formulario con los datos actuales

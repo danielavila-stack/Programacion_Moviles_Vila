@@ -41,6 +41,9 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.tecsup.huellitasvet.data.local.entity.Mascota
 import com.tecsup.huellitasvet.model.Especie
+import com.tecsup.huellitasvet.model.PuntoPeso
+import com.tecsup.huellitasvet.ui.components.graficos.GraficoLineas
+import com.tecsup.huellitasvet.ui.components.graficos.PuntoLinea
 import com.tecsup.huellitasvet.model.Sexo
 import com.tecsup.huellitasvet.ui.components.AppTopBar
 import com.tecsup.huellitasvet.ui.components.EstiloBoton
@@ -69,6 +72,7 @@ fun FichaMascotaScreen(
     val historial by remember(mascotaId) { vm.historial(mascotaId) }.collectAsStateWithLifecycle()
     val mensaje by vm.mensaje.collectAsStateWithLifecycle()
     val terminado by vm.terminado.collectAsStateWithLifecycle()
+    val pesos by vm.pesos.collectAsStateWithLifecycle()
     var pestana by rememberSaveable { mutableIntStateOf(1) }
     var confirmarEliminar by remember { mutableStateOf(false) }
 
@@ -125,6 +129,8 @@ fun FichaMascotaScreen(
                     VetButton("Eliminar mascota", onClick = { confirmarEliminar = true }, estilo = EstiloBoton.PELIGRO)
                 }
             } else if (historial.isEmpty()) {
+                TarjetaPeso(pesos)
+                Spacer(Modifier.height(12.dp))
                 Box(
                     Modifier
                         .fillMaxWidth()
@@ -134,6 +140,8 @@ fun FichaMascotaScreen(
                     Text("Aún no tiene atenciones", color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             } else {
+                TarjetaPeso(pesos)
+                Spacer(Modifier.height(12.dp))
                 historial.forEachIndexed { i, c ->
                     HistorialItem(
                         fecha = diaMes(c.cita.fecha),
@@ -169,6 +177,41 @@ fun FichaMascotaScreen(
             text = { Text(mensaje!!) },
             confirmButton = { TextButton(onClick = vm::limpiarMensaje) { Text("Entendido") } }
         )
+    }
+}
+
+// Evolución del peso: la View solo dibuja los puntos que expone el ViewModel
+@Composable
+private fun TarjetaPeso(pesos: List<PuntoPeso>) {
+    Card(
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        elevation = CardDefaults.cardElevation(1.dp),
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Column(Modifier.padding(16.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text("Evolución del peso", style = MaterialTheme.typography.titleSmall, modifier = Modifier.weight(1f))
+                if (pesos.size >= 2) {
+                    val cambio = pesos.last().peso - pesos.first().peso
+                    Text(
+                        (if (cambio >= 0) "+" else "") + kilos(cambio),
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                }
+            }
+            Spacer(Modifier.height(8.dp))
+            if (pesos.size < 2) {
+                Text(
+                    "Se necesitan al menos 2 atenciones con peso para ver la evolución",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            } else {
+                GraficoLineas(pesos.map { PuntoLinea(diaMes(it.fecha), it.peso.toFloat()) })
+            }
+        }
     }
 }
 
