@@ -7,6 +7,7 @@ import com.tecsup.huellitasvet.data.local.relation.CitaConDetalle
 import com.tecsup.huellitasvet.data.local.relation.MascotaConDueno
 import com.tecsup.huellitasvet.model.ConteoServicio
 import com.tecsup.huellitasvet.model.EstadoCita
+import com.tecsup.huellitasvet.model.UltimaVisita
 import kotlinx.coroutines.flow.Flow
 
 // El contrato: los ViewModels solo conocen esta interface.
@@ -33,6 +34,7 @@ interface VetRepository {
     suspend fun guardarMascota(m: Mascota)
     suspend fun eliminarMascota(m: Mascota)
     suspend fun mascotaTieneCitas(id: Int): Boolean
+    fun observarUltimasVisitas(): Flow<List<UltimaVisita>>
 
     // Citas
     fun observarHorasOcupadas(fecha: String): Flow<List<String>>

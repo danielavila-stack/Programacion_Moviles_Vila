@@ -24,6 +24,7 @@ object Rutas {
     const val AGENDA = "agenda"
     const val ATENDER_CITA = "atender_cita/{id}"
     const val PACIENTES = "pacientes"
+    const val FICHA_PACIENTE = "ficha_paciente/{id}"
     const val SERVICIOS = "servicios"
     const val FORM_SERVICIO = "form_servicio?id={id}"
     const val AJUSTES = "ajustes"
@@ -32,5 +33,6 @@ object Rutas {
     fun fichaMascota(id: Int) = "ficha_mascota/$id"
     fun pedirCita(mascotaId: Int = 0) = "pedir_cita?mascotaId=$mascotaId"
     fun atenderCita(id: Int) = "atender_cita/$id"
+    fun fichaPaciente(id: Int) = "ficha_paciente/$id"
     fun formServicio(id: Int = 0) = "form_servicio?id=$id"
 }

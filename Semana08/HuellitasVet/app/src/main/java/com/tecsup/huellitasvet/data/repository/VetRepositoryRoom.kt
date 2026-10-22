@@ -10,6 +10,7 @@ import com.tecsup.huellitasvet.data.local.relation.CitaConDetalle
 import com.tecsup.huellitasvet.data.local.relation.MascotaConDueno
 import com.tecsup.huellitasvet.model.ConteoServicio
 import com.tecsup.huellitasvet.model.EstadoCita
+import com.tecsup.huellitasvet.model.UltimaVisita
 import kotlinx.coroutines.flow.Flow
 
 // Implementación del contrato con Room. Solo esta clase conoce los DAOs.
@@ -58,6 +59,8 @@ class VetRepositoryRoom(private val db: VetDatabase) : VetRepository {
     override suspend fun eliminarMascota(m: Mascota) = mascotaDao.eliminar(m)
 
     override suspend fun mascotaTieneCitas(id: Int): Boolean = mascotaDao.contarCitas(id) > 0
+
+    override fun observarUltimasVisitas(): Flow<List<UltimaVisita>> = citaDao.observarUltimasVisitas()
 
     // Citas
     override fun observarHorasOcupadas(fecha: String): Flow<List<String>> =

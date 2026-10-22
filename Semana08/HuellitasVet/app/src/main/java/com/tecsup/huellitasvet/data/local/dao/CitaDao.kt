@@ -7,6 +7,7 @@ import androidx.room.Transaction
 import com.tecsup.huellitasvet.data.local.entity.Cita
 import com.tecsup.huellitasvet.data.local.relation.CitaConDetalle
 import com.tecsup.huellitasvet.model.ConteoServicio
+import com.tecsup.huellitasvet.model.UltimaVisita
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -86,6 +87,10 @@ interface CitaDao {
 
     @Query("SELECT COALESCE(SUM(precio), 0.0) FROM citas WHERE estado = 'ATENDIDA' AND fecha >= :fechaInicio")
     fun ingresosDesde(fechaInicio: String): Flow<Double>
+
+    // Última visita (cita ATENDIDA más reciente) de cada mascota, para Pacientes
+    @Query("SELECT mascotaId AS mascotaId, MAX(fecha) AS fecha FROM citas WHERE estado = 'ATENDIDA' GROUP BY mascotaId")
+    fun observarUltimasVisitas(): Flow<List<UltimaVisita>>
 
     // Para la regla "un servicio con citas no se puede eliminar"
     @Query("SELECT COUNT(*) FROM citas WHERE servicioId = :servicioId")

@@ -56,7 +56,11 @@ import com.tecsup.huellitasvet.ui.dueno.PerfilScreen
 import com.tecsup.huellitasvet.ui.dueno.SplashScreen
 import com.tecsup.huellitasvet.ui.theme.VetTheme
 import com.tecsup.huellitasvet.ui.veterinario.AgendaScreen
+import com.tecsup.huellitasvet.ui.veterinario.AtenderCitaScreen
+import com.tecsup.huellitasvet.ui.veterinario.PacientesScreen
 import com.tecsup.huellitasvet.ui.veterinario.PanelScreen
+import com.tecsup.huellitasvet.viewmodel.AtenderCitaViewModel
+import com.tecsup.huellitasvet.viewmodel.PacientesViewModel
 import com.tecsup.huellitasvet.ui.veterinario.ServiciosScreen
 import com.tecsup.huellitasvet.viewmodel.AgendaViewModel
 import com.tecsup.huellitasvet.viewmodel.PanelViewModel
@@ -222,15 +226,49 @@ fun NavVet(app: VetApp) {
                 val vm: AgendaViewModel = viewModel(factory = VetViewModelFactory { AgendaViewModel(app.repository) })
                 VetTheme(Rol.ADMIN, oscuro) {
                     ScaffoldVet(nav, Rutas.AGENDA) {
-                        AgendaScreen(vm = vm, onAtender = { /* TODO (Paso 12): nav.navigate(Rutas.atenderCita(it)) */ })
+                        AgendaScreen(vm = vm, onAtender = { nav.navigate(Rutas.atenderCita(it)) })
                     }
                 }
             }
+            composable(
+                Rutas.ATENDER_CITA,
+                arguments = listOf(navArgument("id") { type = NavType.IntType })
+            ) { entry ->
+                val id = entry.arguments?.getInt("id") ?: 0
+                val vm: AtenderCitaViewModel = viewModel(
+                    factory = VetViewModelFactory { AtenderCitaViewModel(app.repository, id) }
+                )
+                VetTheme(Rol.ADMIN, oscuro) {
+                    AtenderCitaScreen(vm = vm, onListo = { nav.popBackStack() })
+                }
+            }
             composable(Rutas.PACIENTES) {
-                // TODO (Paso 12): PacientesScreen
+                val vm: PacientesViewModel = viewModel(factory = VetViewModelFactory { PacientesViewModel(app.repository) })
                 VetTheme(Rol.ADMIN, oscuro) {
                     ScaffoldVet(nav, Rutas.PACIENTES) {
-                        PantallaTemporal("Pacientes", onCerrarSesion = ::cerrarSesion)
+                        PacientesScreen(vm = vm, onVerPaciente = { nav.navigate(Rutas.fichaPaciente(it)) })
+                    }
+                }
+            }
+            composable(
+                Rutas.FICHA_PACIENTE,
+                arguments = listOf(navArgument("id") { type = NavType.IntType })
+            ) { entry ->
+                val id = entry.arguments?.getInt("id") ?: 0
+                val vm: MascotaViewModel = viewModel(
+                    factory = VetViewModelFactory { MascotaViewModel(app.repository, 0, id) }
+                )
+                VetTheme(Rol.ADMIN, oscuro) {
+                    ScaffoldVet(nav, Rutas.PACIENTES) {
+                        // El veterinario solo consulta: sin editar, eliminar ni pedir cita
+                        FichaMascotaScreen(
+                            vm = vm,
+                            mascotaId = id,
+                            esDueno = false,
+                            onBack = { nav.popBackStack() },
+                            onPedirCita = {},
+                            onEditar = {}
+                        )
                     }
                 }
             }
