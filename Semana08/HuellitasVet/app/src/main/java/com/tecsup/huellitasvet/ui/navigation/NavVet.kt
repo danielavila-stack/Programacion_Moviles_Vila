@@ -32,6 +32,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
+import androidx.navigation.navArgument
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
@@ -40,6 +42,8 @@ import com.tecsup.huellitasvet.VetApp
 import com.tecsup.huellitasvet.model.Rol
 import com.tecsup.huellitasvet.ui.components.EstiloBoton
 import com.tecsup.huellitasvet.ui.components.VetButton
+import com.tecsup.huellitasvet.ui.dueno.FichaMascotaScreen
+import com.tecsup.huellitasvet.ui.dueno.FormularioMascotaScreen
 import com.tecsup.huellitasvet.ui.dueno.InicioScreen
 import com.tecsup.huellitasvet.ui.dueno.LoginScreen
 import com.tecsup.huellitasvet.ui.dueno.MascotasScreen
@@ -47,6 +51,7 @@ import com.tecsup.huellitasvet.ui.dueno.SplashScreen
 import com.tecsup.huellitasvet.ui.theme.VetTheme
 import com.tecsup.huellitasvet.ui.veterinario.ServiciosScreen
 import com.tecsup.huellitasvet.viewmodel.InicioViewModel
+import com.tecsup.huellitasvet.viewmodel.MascotaViewModel
 import com.tecsup.huellitasvet.viewmodel.ServiciosViewModel
 import com.tecsup.huellitasvet.viewmodel.SesionViewModel
 import com.tecsup.huellitasvet.viewmodel.VetViewModelFactory
@@ -99,9 +104,9 @@ fun NavVet(app: VetApp) {
                         InicioScreen(
                             vm = vm,
                             nombreDueno = usuario?.nombre.orEmpty(),
-                            onVerMascota = { /* TODO (Paso 8): nav.navigate(Rutas.fichaMascota(it)) */ },
+                            onVerMascota = { nav.navigate(Rutas.fichaMascota(it)) },
                             onVerTodas = { nav.irATab(Rutas.MASCOTAS) },
-                            onAgregarMascota = { /* TODO (Paso 8): nav.navigate(Rutas.formMascota()) */ },
+                            onAgregarMascota = { nav.navigate(Rutas.formMascota()) },
                             onPedirCita = { /* TODO (Paso 9): nav.navigate(Rutas.pedirCita()) */ }
                         )
                     }
@@ -113,10 +118,43 @@ fun NavVet(app: VetApp) {
                     ScaffoldDueno(nav, Rutas.MASCOTAS) {
                         MascotasScreen(
                             vm = vm,
-                            onVerMascota = { /* TODO (Paso 8): nav.navigate(Rutas.fichaMascota(it)) */ },
-                            onAgregar = { /* TODO (Paso 8): nav.navigate(Rutas.formMascota()) */ }
+                            onVerMascota = { nav.navigate(Rutas.fichaMascota(it)) },
+                            onAgregar = { nav.navigate(Rutas.formMascota()) }
                         )
                     }
+                }
+            }
+            composable(
+                Rutas.FICHA_MASCOTA,
+                arguments = listOf(navArgument("id") { type = NavType.IntType })
+            ) { entry ->
+                val id = entry.arguments?.getInt("id") ?: 0
+                val vm: MascotaViewModel = viewModel(
+                    factory = VetViewModelFactory { MascotaViewModel(app.repository, usuario?.id ?: 0, id) }
+                )
+                VetTheme(Rol.CLIENTE, oscuro) {
+                    ScaffoldDueno(nav, Rutas.MASCOTAS) {
+                        FichaMascotaScreen(
+                            vm = vm,
+                            mascotaId = id,
+                            esDueno = true,
+                            onBack = { nav.popBackStack() },
+                            onPedirCita = { /* TODO (Paso 9): nav.navigate(Rutas.pedirCita(it)) */ },
+                            onEditar = { nav.navigate(Rutas.formMascota(it)) }
+                        )
+                    }
+                }
+            }
+            composable(
+                Rutas.FORM_MASCOTA,
+                arguments = listOf(navArgument("id") { type = NavType.IntType; defaultValue = 0 })
+            ) { entry ->
+                val id = entry.arguments?.getInt("id") ?: 0
+                val vm: MascotaViewModel = viewModel(
+                    factory = VetViewModelFactory { MascotaViewModel(app.repository, usuario?.id ?: 0, id) }
+                )
+                VetTheme(Rol.CLIENTE, oscuro) {
+                    FormularioMascotaScreen(vm = vm, esNueva = id == 0, onListo = { nav.popBackStack() })
                 }
             }
             composable(Rutas.MIS_CITAS) {
