@@ -47,11 +47,13 @@ import com.tecsup.huellitasvet.ui.dueno.FormularioMascotaScreen
 import com.tecsup.huellitasvet.ui.dueno.InicioScreen
 import com.tecsup.huellitasvet.ui.dueno.LoginScreen
 import com.tecsup.huellitasvet.ui.dueno.MascotasScreen
+import com.tecsup.huellitasvet.ui.dueno.PedirCitaScreen
 import com.tecsup.huellitasvet.ui.dueno.SplashScreen
 import com.tecsup.huellitasvet.ui.theme.VetTheme
 import com.tecsup.huellitasvet.ui.veterinario.ServiciosScreen
 import com.tecsup.huellitasvet.viewmodel.InicioViewModel
 import com.tecsup.huellitasvet.viewmodel.MascotaViewModel
+import com.tecsup.huellitasvet.viewmodel.PedirCitaViewModel
 import com.tecsup.huellitasvet.viewmodel.ServiciosViewModel
 import com.tecsup.huellitasvet.viewmodel.SesionViewModel
 import com.tecsup.huellitasvet.viewmodel.VetViewModelFactory
@@ -107,7 +109,7 @@ fun NavVet(app: VetApp) {
                             onVerMascota = { nav.navigate(Rutas.fichaMascota(it)) },
                             onVerTodas = { nav.irATab(Rutas.MASCOTAS) },
                             onAgregarMascota = { nav.navigate(Rutas.formMascota()) },
-                            onPedirCita = { /* TODO (Paso 9): nav.navigate(Rutas.pedirCita()) */ }
+                            onPedirCita = { nav.navigate(Rutas.pedirCita()) }
                         )
                     }
                 }
@@ -139,7 +141,7 @@ fun NavVet(app: VetApp) {
                             mascotaId = id,
                             esDueno = true,
                             onBack = { nav.popBackStack() },
-                            onPedirCita = { /* TODO (Paso 9): nav.navigate(Rutas.pedirCita(it)) */ },
+                            onPedirCita = { nav.navigate(Rutas.pedirCita(it)) },
                             onEditar = { nav.navigate(Rutas.formMascota(it)) }
                         )
                     }
@@ -155,6 +157,22 @@ fun NavVet(app: VetApp) {
                 )
                 VetTheme(Rol.CLIENTE, oscuro) {
                     FormularioMascotaScreen(vm = vm, esNueva = id == 0, onListo = { nav.popBackStack() })
+                }
+            }
+            composable(
+                Rutas.PEDIR_CITA,
+                arguments = listOf(navArgument("mascotaId") { type = NavType.IntType; defaultValue = 0 })
+            ) { entry ->
+                val mascotaId = entry.arguments?.getInt("mascotaId") ?: 0
+                val vm: PedirCitaViewModel = viewModel(
+                    factory = VetViewModelFactory { PedirCitaViewModel(app.repository, usuario?.id ?: 0, mascotaId) }
+                )
+                VetTheme(Rol.CLIENTE, oscuro) {
+                    PedirCitaScreen(
+                        vm = vm,
+                        onBack = { nav.popBackStack() },
+                        onCitaCreada = { nav.irATab(Rutas.MIS_CITAS) }
+                    )
                 }
             }
             composable(Rutas.MIS_CITAS) {
@@ -210,12 +228,11 @@ private fun NavHostController.irLimpiando(ruta: String) {
     }
 }
 
-// Cambia de pestaña de la barra inferior sin apilar pantallas repetidas
+// Cambia de pestaña de la barra inferior: deja solo Inicio debajo, sin apilar pantallas repetidas
 private fun NavHostController.irATab(ruta: String) {
     navigate(ruta) {
-        popUpTo(Rutas.INICIO) { saveState = true }
+        popUpTo(Rutas.INICIO)
         launchSingleTop = true
-        restoreState = true
     }
 }
 
