@@ -46,7 +46,7 @@ import com.tecsup.huellitasvet.ui.theme.AvisoTexto
 import com.tecsup.huellitasvet.viewmodel.MisCitasViewModel
 
 @Composable
-fun MisCitasScreen(vm: MisCitasViewModel, onPedirCita: () -> Unit) {
+fun MisCitasScreen(vm: MisCitasViewModel, onPedirCita: () -> Unit, onReprogramar: (Int) -> Unit) {
     val proximas by vm.proximas.collectAsStateWithLifecycle()
     val historial by vm.historial.collectAsStateWithLifecycle()
     val mensaje by vm.mensaje.collectAsStateWithLifecycle()
@@ -101,8 +101,13 @@ fun MisCitasScreen(vm: MisCitasViewModel, onPedirCita: () -> Unit) {
                         icono = iconoServicio(c.servicio.icono),
                         accion = if (pestana == 0 && activa) {
                             {
-                                TextButton(onClick = { if (vm.validarCancelacion(c)) porCancelar = c }) {
-                                    Text("Cancelar", color = MaterialTheme.colorScheme.error)
+                                Column(horizontalAlignment = Alignment.End) {
+                                    TextButton(onClick = { if (vm.validarReprogramacion(c)) onReprogramar(c.cita.id) }) {
+                                        Text("Reprogramar", color = MaterialTheme.colorScheme.primary)
+                                    }
+                                    TextButton(onClick = { if (vm.validarCancelacion(c)) porCancelar = c }) {
+                                        Text("Cancelar", color = MaterialTheme.colorScheme.error)
+                                    }
                                 }
                             }
                         } else null
@@ -119,7 +124,7 @@ fun MisCitasScreen(vm: MisCitasViewModel, onPedirCita: () -> Unit) {
                         ) {
                             Icon(Icons.Outlined.Schedule, null, tint = AvisoTexto, modifier = Modifier.size(18.dp))
                             Text(
-                                "  Puedes cancelar hasta 2 horas antes",
+                                "  Puedes reprogramar o cancelar hasta 2 horas antes",
                                 style = MaterialTheme.typography.bodySmall,
                                 color = AvisoTexto
                             )
@@ -150,7 +155,7 @@ fun MisCitasScreen(vm: MisCitasViewModel, onPedirCita: () -> Unit) {
     if (mensaje != null) {
         AlertDialog(
             onDismissRequest = vm::limpiarMensaje,
-            title = { Text("Cancelar cita") },
+            title = { Text("Mis citas") },
             text = { Text(mensaje!!) },
             confirmButton = { TextButton(onClick = vm::limpiarMensaje) { Text("Entendido") } }
         )

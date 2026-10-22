@@ -56,6 +56,13 @@ class MisCitasViewModel(private val repo: VetRepository, duenoId: Int) : ViewMod
         return ok
     }
 
+    // Reprogramar usa la misma regla que cancelar (PENDIENTE o CONFIRMADA y más de 2 horas)
+    fun validarReprogramacion(c: CitaConDetalle): Boolean {
+        val ok = puedeCancelar(c)
+        if (!ok) _mensaje.value = "Ya no puedes reprogramar esta cita"
+        return ok
+    }
+
     fun cancelar(c: CitaConDetalle) {
         if (!validarCancelacion(c)) return
         viewModelScope.launch { repo.cambiarEstadoCita(c.cita.id, EstadoCita.CANCELADA) }

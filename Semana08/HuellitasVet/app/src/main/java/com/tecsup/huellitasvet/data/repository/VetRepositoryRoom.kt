@@ -107,6 +107,9 @@ class VetRepositoryRoom(private val db: VetDatabase) : VetRepository {
     override suspend fun cambiarEstadoCita(id: Int, estado: EstadoCita) =
         citaDao.actualizarEstado(id, estado.name)
 
+    override suspend fun reprogramarCita(id: Int, fecha: String, hora: String) =
+        citaDao.reprogramar(id, fecha, hora)
+
     // Toca dos tablas (citas y mascotas): todo o nada
     override suspend fun registrarAtencion(
         citaId: Int, diagnostico: String, tratamiento: String, peso: Double

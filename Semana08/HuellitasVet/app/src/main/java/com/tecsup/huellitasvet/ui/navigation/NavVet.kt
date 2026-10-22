@@ -49,6 +49,8 @@ import com.tecsup.huellitasvet.ui.dueno.MascotasScreen
 import com.tecsup.huellitasvet.ui.dueno.MisCitasScreen
 import com.tecsup.huellitasvet.ui.dueno.PedirCitaScreen
 import com.tecsup.huellitasvet.ui.dueno.PerfilScreen
+import com.tecsup.huellitasvet.ui.dueno.ReprogramarCitaScreen
+import com.tecsup.huellitasvet.viewmodel.ReprogramarCitaViewModel
 import com.tecsup.huellitasvet.ui.dueno.SplashScreen
 import com.tecsup.huellitasvet.ui.theme.VetTheme
 import com.tecsup.huellitasvet.ui.veterinario.AgendaScreen
@@ -206,8 +208,26 @@ fun NavVet(app: VetApp) {
                 )
                 VetTheme(Rol.CLIENTE, oscuro) {
                     ScaffoldDueno(nav, Rutas.MIS_CITAS) {
-                        MisCitasScreen(vm = vm, onPedirCita = { nav.navigate(Rutas.pedirCita()) })
+                        MisCitasScreen(
+                            vm = vm,
+                            onPedirCita = { nav.navigate(Rutas.pedirCita()) },
+                            onReprogramar = { nav.navigate(Rutas.reprogramarCita(it)) }
+                        )
                     }
+                }
+            }
+            composable(
+                Rutas.REPROGRAMAR_CITA,
+                arguments = listOf(navArgument("id") { type = NavType.IntType })
+            ) { entry ->
+                val id = entry.arguments?.getInt("id") ?: 0
+                val vm: ReprogramarCitaViewModel = viewModel(
+                    factory = VetViewModelFactory {
+                        ReprogramarCitaViewModel(app.repository, id, app.preferencias.aceptarCitas)
+                    }
+                )
+                VetTheme(Rol.CLIENTE, oscuro) {
+                    ReprogramarCitaScreen(vm = vm, onListo = { nav.popBackStack() })
                 }
             }
             composable(Rutas.PERFIL) { entry ->
