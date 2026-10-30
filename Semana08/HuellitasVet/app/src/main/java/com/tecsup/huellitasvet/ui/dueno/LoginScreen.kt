@@ -15,6 +15,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Badge
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material3.MaterialTheme
@@ -37,7 +38,7 @@ import com.tecsup.huellitasvet.ui.components.VetTextField
 import com.tecsup.huellitasvet.ui.theme.VetTheme
 import com.tecsup.huellitasvet.viewmodel.SesionViewModel
 
-// Un solo Composable para ambos roles: el color cambia según la pestaña elegida.
+// Un solo Composable para los tres roles: el color cambia según la pestaña elegida.
 @Composable
 fun LoginScreen(
     vm: SesionViewModel,
@@ -47,6 +48,7 @@ fun LoginScreen(
     var rol by rememberSaveable { mutableStateOf(Rol.CLIENTE) }
     var correo by rememberSaveable { mutableStateOf("") }
     var clave by rememberSaveable { mutableStateOf("") }
+    var codigo by rememberSaveable { mutableStateOf("") }
     val error by vm.error.collectAsStateWithLifecycle()
     val usuario by vm.usuarioActual.collectAsStateWithLifecycle()
 
@@ -93,6 +95,15 @@ fun LoginScreen(
                     icono = Icons.Filled.Lock,
                     esClave = true
                 )
+                if (rol == Rol.ADMINISTRADOR) {
+                    Spacer(Modifier.height(12.dp))
+                    VetTextField(
+                        valor = codigo,
+                        onValorChange = { codigo = it; vm.limpiarError() },
+                        etiqueta = "Código de administrador",
+                        icono = Icons.Filled.Badge
+                    )
+                }
                 Text(
                     "¿Olvidaste tu contraseña?",
                     style = MaterialTheme.typography.labelMedium,
@@ -111,47 +122,51 @@ fun LoginScreen(
                     )
                 }
 
-                VetButton("Ingresar", onClick = { vm.login(correo, clave, rol) })
+                VetButton("Ingresar", onClick = { vm.login(correo, clave, rol, codigo) })
                 Spacer(Modifier.height(20.dp))
 
-                if (rol == Rol.CLIENTE) {
-                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
-                        Text(
-                            "¿No tienes cuenta? ",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                        Text(
-                            "Regístrate",
-                            style = MaterialTheme.typography.labelLarge,
-                            color = MaterialTheme.colorScheme.primary
-                        )
+                when (rol) {
+                    Rol.CLIENTE -> {
+                        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
+                            Text(
+                                "¿No tienes cuenta? ",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                            Text(
+                                "Regístrate",
+                                style = MaterialTheme.typography.labelLarge,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                        }
                     }
-                } else {
-                    Column(
-                        Modifier
-                            .fillMaxWidth()
-                            .background(MaterialTheme.colorScheme.primaryContainer, RoundedCornerShape(12.dp))
-                            .padding(14.dp)
-                    ) {
-                        Text(
-                            "Modo práctica",
-                            style = MaterialTheme.typography.labelLarge,
-                            color = MaterialTheme.colorScheme.primary
-                        )
-                        Text(
-                            "Puedes cambiar de perfil desde Ajustes para probar ambos roles.",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onPrimaryContainer
-                        )
+                    Rol.ADMIN -> {
+                        Column(
+                            Modifier
+                                .fillMaxWidth()
+                                .background(MaterialTheme.colorScheme.primaryContainer, RoundedCornerShape(12.dp))
+                                .padding(14.dp)
+                        ) {
+                            Text(
+                                "Modo práctica",
+                                style = MaterialTheme.typography.labelLarge,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                            Text(
+                                "Puedes cambiar de perfil desde Ajustes para probar ambos roles.",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onPrimaryContainer
+                            )
+                        }
                     }
+                    Rol.ADMINISTRADOR -> {}
                 }
             }
         }
     }
 }
 
-// Selector de dos pestañas: Dueño / Veterinario
+// Selector de pestañas: Dueño / Veterinario / Administrador
 @Composable
 private fun SelectorRol(seleccionado: Rol, onCambio: (Rol) -> Unit) {
     Row(
@@ -170,7 +185,7 @@ private fun SelectorRol(seleccionado: Rol, onCambio: (Rol) -> Unit) {
                 modifier = Modifier.weight(1f)
             ) {
                 Box(Modifier.padding(vertical = 10.dp), contentAlignment = Alignment.Center) {
-                    Text(r.etiqueta, style = MaterialTheme.typography.labelLarge)
+                    Text(r.etiqueta, style = MaterialTheme.typography.labelMedium)
                 }
             }
         }

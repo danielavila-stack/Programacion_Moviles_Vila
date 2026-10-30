@@ -21,6 +21,8 @@ object DatosIniciales {
     private const val LUIS = 2
     private const val VET = 3
 
+    private const val ADMINISTRADOR = 4
+
     private const val CONSULTA = 1
     private const val VACUNACION = 2
     private const val BANO = 3
@@ -30,6 +32,7 @@ object DatosIniciales {
     private const val MAX = 2
     private const val ROCKY = 3
     private const val MICHI = 4
+
 
     suspend fun sembrar(db: VetDatabase) {
         if (db.usuarioDao().contar() > 0) return
@@ -51,7 +54,9 @@ object DatosIniciales {
     private fun usuarios() = listOf(
         Usuario(id = DANIELA, nombre = "Daniela Fransua", correo = "daniela@correo.test", clave = "1234", rol = Rol.CLIENTE.name),
         Usuario(id = LUIS, nombre = "Luis Ramos", correo = "luis@correo.test", clave = "1234", rol = Rol.CLIENTE.name),
-        Usuario(id = VET, nombre = "Dra. Carla Rojas", correo = "vet@huellitas.test", clave = "admin", rol = Rol.ADMIN.name)
+        Usuario(id = VET, nombre = "Dra. Carla Rojas", correo = "vet@huellitas.test", clave = "admin", rol = Rol.ADMIN.name),
+        Usuario(id = ADMINISTRADOR, nombre = "Andrea", apellido = "Salazar", correo = "admin@huellitas.test",
+            clave = "admin123", rol = Rol.ADMINISTRADOR.name, codigo = "ADM-001")
     )
 
     private fun mascotas() = listOf(

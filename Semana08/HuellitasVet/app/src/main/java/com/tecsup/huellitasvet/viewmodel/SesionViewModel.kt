@@ -54,9 +54,13 @@ class SesionViewModel(
         }
     }
 
-    fun login(correo: String, clave: String, rolSeleccionado: Rol) {
+    fun login(correo: String, clave: String, rolSeleccionado: Rol, codigo: String = "") {
         if (correo.isBlank() || clave.isBlank()) {
             _error.value = "Ingresa tu correo y tu contraseña"
+            return
+        }
+        if (rolSeleccionado == Rol.ADMINISTRADOR && codigo.isBlank()) {
+            _error.value = "Ingresa tu código de administrador"
             return
         }
         viewModelScope.launch {
@@ -67,6 +71,8 @@ class SesionViewModel(
                 usuario.rol != rolSeleccionado.name ->
                     _error.value = "Esta cuenta no es de ${rolSeleccionado.etiqueta}. " +
                         "Elige la pestaña ${Rol.valueOf(usuario.rol).etiqueta}"
+                rolSeleccionado == Rol.ADMINISTRADOR && usuario.codigo != codigo.trim() ->
+                    _error.value = "Código de administrador incorrecto"
                 else -> {
                     _error.value = null
                     prefs.guardarSesion(rolSeleccionado, usuario.id)

@@ -64,9 +64,38 @@ private val VetOscuro = darkColorScheme(
     error = Color(0xFFF87171)
 )
 
+private val AdminClaro = lightColorScheme(
+    primary = Morado,
+    onPrimary = Color.White,
+    primaryContainer = MoradoContenedor,
+    onPrimaryContainer = MoradoOscuro,
+    secondary = MoradoOscuro,
+    background = AdminFondo,
+    surface = Color.White,
+    surfaceVariant = Color(0xFFF3E8FF),
+    onSurfaceVariant = Color(0xFF6B5B75),
+    outline = Color(0xFFE2D6EB),
+    error = Cancelada
+)
+
+private val AdminOscuro = darkColorScheme(
+    primary = Color(0xFFA78BFA),
+    onPrimary = Color(0xFF2E1065),
+    primaryContainer = MoradoOscuro,
+    onPrimaryContainer = MoradoContenedor,
+    secondary = Color(0xFFC4B5FD),
+    background = Color(0xFF130F1C),
+    surface = Color(0xFF1E192B),
+    surfaceVariant = Color(0xFF2E263A),
+    onSurfaceVariant = Color(0xFFC4BDCC),
+    outline = Color(0xFF423A52),
+    error = Color(0xFFF87171)
+)
+
 fun esquemaDe(rol: Rol, oscuro: Boolean): ColorScheme = when (rol) {
     Rol.CLIENTE -> if (oscuro) DuenoOscuro else DuenoClaro
     Rol.ADMIN -> if (oscuro) VetOscuro else VetClaro
+    Rol.ADMINISTRADOR -> if (oscuro) AdminOscuro else AdminClaro
 }
 
 // Entrega un ColorScheme según el perfil. En las pantallas usa MaterialTheme.colorScheme.

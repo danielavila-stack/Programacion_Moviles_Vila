@@ -17,13 +17,24 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuAnchorType
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
@@ -87,7 +98,13 @@ fun FormularioMascotaScreen(
             ErrorCampo(errores.especie)
             Spacer(Modifier.height(10.dp))
 
-            VetTextField(form.raza, vm::cambiarRaza, "Raza")
+            // Perro y Gato: lista de razas; Otro: se escribe
+            val razas = vm.razasDe(form.especie)
+            if (razas.isEmpty()) {
+                VetTextField(form.raza, vm::cambiarRaza, "Raza")
+            } else {
+                SelectorRaza(form.raza, razas, errores.raza, vm::cambiarRaza)
+            }
             Spacer(Modifier.height(10.dp))
 
             Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
@@ -111,6 +128,39 @@ fun FormularioMascotaScreen(
             Spacer(Modifier.height(10.dp))
             VetButton("Cancelar", onClick = onListo, estilo = EstiloBoton.SECUNDARIO)
             Spacer(Modifier.height(16.dp))
+        }
+    }
+}
+
+// Lista desplegable con las razas de la especie elegida
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun SelectorRaza(raza: String, razas: List<String>, error: String?, onElegir: (String) -> Unit) {
+    var abierto by remember { mutableStateOf(false) }
+    ExposedDropdownMenuBox(expanded = abierto, onExpandedChange = { abierto = it }) {
+        OutlinedTextField(
+            value = raza,
+            onValueChange = {},
+            readOnly = true,
+            label = { Text("Raza") },
+            placeholder = { Text("Elige la raza") },
+            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = abierto) },
+            isError = error != null,
+            supportingText = error?.let { { Text(it) } },
+            shape = RoundedCornerShape(12.dp),
+            colors = OutlinedTextFieldDefaults.colors(
+                unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+                focusedContainerColor = MaterialTheme.colorScheme.surface,
+                unfocusedBorderColor = MaterialTheme.colorScheme.outline
+            ),
+            modifier = Modifier
+                .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable)
+                .fillMaxWidth()
+        )
+        ExposedDropdownMenu(expanded = abierto, onDismissRequest = { abierto = false }) {
+            razas.forEach { r ->
+                DropdownMenuItem(text = { Text(r) }, onClick = { onElegir(r); abierto = false })
+            }
         }
     }
 }

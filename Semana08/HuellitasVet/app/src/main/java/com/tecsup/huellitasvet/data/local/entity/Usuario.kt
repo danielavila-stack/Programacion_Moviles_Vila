@@ -13,5 +13,7 @@ data class Usuario(
     val nombre: String,
     val correo: String,
     val clave: String,
-    val rol: String // Rol.name: CLIENTE | ADMIN
+    val rol: String, // Rol.name: CLIENTE | ADMIN | ADMINISTRADOR
+    val apellido: String? = null,   // solo el administrador
+    val codigo: String? = null      // código de administrador
 )

@@ -5,10 +5,14 @@ object Rutas {
     // Grafos
     const val GRAFO_DUENO = "grafo_dueno"
     const val GRAFO_VET = "grafo_vet"
+    const val GRAFO_ADMIN = "grafo_admin"
 
     // Comunes
     const val SPLASH = "splash"
     const val LOGIN = "login"
+
+    // Administrador
+    const val ADMIN_PANEL = "admin_panel"
 
     // Dueño
     const val INICIO = "inicio"

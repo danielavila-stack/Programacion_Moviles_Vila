@@ -7,6 +7,7 @@ import com.tecsup.huellitasvet.data.local.relation.CitaConDetalle
 import com.tecsup.huellitasvet.data.repository.VetRepository
 import com.tecsup.huellitasvet.model.Especie
 import com.tecsup.huellitasvet.model.PuntoPeso
+import com.tecsup.huellitasvet.model.Razas
 import com.tecsup.huellitasvet.model.Sexo
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -33,11 +34,12 @@ data class FormMascota(
 data class ErroresMascota(
     val nombre: String? = null,
     val especie: String? = null,
+    val raza: String? = null,
     val anio: String? = null,
     val peso: String? = null,
     val sexo: String? = null
 ) {
-    val hayErrores get() = listOf(nombre, especie, anio, peso, sexo).any { it != null }
+    val hayErrores get() = listOf(nombre, especie, raza, anio, peso, sexo).any { it != null }
 }
 
 // Registrar / editar mascota y ver su ficha con el historial clínico.
@@ -100,8 +102,15 @@ class MascotaViewModel(
 
     // Cambios del formulario: se limpia el error del campo que se edita
     fun cambiarNombre(v: String) { _form.update { it.copy(nombre = v) }; _errores.update { it.copy(nombre = null) } }
-    fun cambiarEspecie(v: Especie) { _form.update { it.copy(especie = v) }; _errores.update { it.copy(especie = null) } }
-    fun cambiarRaza(v: String) { _form.update { it.copy(raza = v) } }
+    // Si cambia la especie, se borra una raza que ya no corresponde
+    fun cambiarEspecie(v: Especie) {
+        _form.update { f -> f.copy(especie = v, raza = if (f.raza in Razas.de(v)) f.raza else "") }
+        _errores.update { it.copy(especie = null, raza = null) }
+    }
+    fun cambiarRaza(v: String) { _form.update { it.copy(raza = v) }; _errores.update { it.copy(raza = null) } }
+
+    // Razas de la especie elegida (vacía = escribir la raza)
+    fun razasDe(especie: Especie?): List<String> = Razas.de(especie)
     fun cambiarAnio(v: String) { _form.update { it.copy(anio = v.filter(Char::isDigit).take(4)) }; _errores.update { it.copy(anio = null) } }
     fun cambiarPeso(v: String) { _form.update { it.copy(peso = v.replace(',', '.')) }; _errores.update { it.copy(peso = null) } }
     fun cambiarSexo(v: Sexo) { _form.update { it.copy(sexo = v) }; _errores.update { it.copy(sexo = null) } }
@@ -114,6 +123,8 @@ class MascotaViewModel(
         val errores = ErroresMascota(
             nombre = if (f.nombre.trim().length < 2) "El nombre debe tener al menos 2 caracteres" else null,
             especie = if (f.especie == null) "Elige la especie" else null,
+            // Perro y Gato: la raza se elige de la lista
+            raza = if (Razas.de(f.especie).isNotEmpty() && f.raza !in Razas.de(f.especie)) "Elige la raza" else null,
             anio = if (anio == null || anio !in 1990..anioActual) "El año debe estar entre 1990 y $anioActual" else null,
             peso = if (peso == null || peso <= 0.0) "El peso debe ser mayor que 0" else null,
             sexo = if (f.sexo == null) "Elige el sexo" else null

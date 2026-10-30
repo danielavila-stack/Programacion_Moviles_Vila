@@ -41,6 +41,7 @@ import androidx.navigation.compose.navigation
 import androidx.navigation.compose.rememberNavController
 import com.tecsup.huellitasvet.VetApp
 import com.tecsup.huellitasvet.model.Rol
+import com.tecsup.huellitasvet.ui.administrador.AdminScreen
 import com.tecsup.huellitasvet.ui.dueno.FichaMascotaScreen
 import com.tecsup.huellitasvet.ui.dueno.FormularioMascotaScreen
 import com.tecsup.huellitasvet.ui.dueno.InicioScreen
@@ -50,7 +51,6 @@ import com.tecsup.huellitasvet.ui.dueno.MisCitasScreen
 import com.tecsup.huellitasvet.ui.dueno.PedirCitaScreen
 import com.tecsup.huellitasvet.ui.dueno.PerfilScreen
 import com.tecsup.huellitasvet.ui.dueno.ReprogramarCitaScreen
-import com.tecsup.huellitasvet.viewmodel.ReprogramarCitaViewModel
 import com.tecsup.huellitasvet.ui.dueno.SplashScreen
 import com.tecsup.huellitasvet.ui.theme.VetTheme
 import com.tecsup.huellitasvet.ui.veterinario.AgendaScreen
@@ -59,15 +59,17 @@ import com.tecsup.huellitasvet.ui.veterinario.AtenderCitaScreen
 import com.tecsup.huellitasvet.ui.veterinario.FormularioServicioScreen
 import com.tecsup.huellitasvet.ui.veterinario.PacientesScreen
 import com.tecsup.huellitasvet.ui.veterinario.PanelScreen
-import com.tecsup.huellitasvet.viewmodel.AtenderCitaViewModel
-import com.tecsup.huellitasvet.viewmodel.PacientesViewModel
 import com.tecsup.huellitasvet.ui.veterinario.ServiciosScreen
+import com.tecsup.huellitasvet.viewmodel.AdminViewModel
 import com.tecsup.huellitasvet.viewmodel.AgendaViewModel
-import com.tecsup.huellitasvet.viewmodel.PanelViewModel
+import com.tecsup.huellitasvet.viewmodel.AtenderCitaViewModel
 import com.tecsup.huellitasvet.viewmodel.InicioViewModel
 import com.tecsup.huellitasvet.viewmodel.MascotaViewModel
 import com.tecsup.huellitasvet.viewmodel.MisCitasViewModel
+import com.tecsup.huellitasvet.viewmodel.PacientesViewModel
+import com.tecsup.huellitasvet.viewmodel.PanelViewModel
 import com.tecsup.huellitasvet.viewmodel.PedirCitaViewModel
+import com.tecsup.huellitasvet.viewmodel.ReprogramarCitaViewModel
 import com.tecsup.huellitasvet.viewmodel.ServiciosViewModel
 import com.tecsup.huellitasvet.viewmodel.SesionViewModel
 import com.tecsup.huellitasvet.viewmodel.VetViewModelFactory
@@ -84,7 +86,13 @@ fun NavVet(app: VetApp) {
     val usuario by sesionVm.usuarioActual.collectAsStateWithLifecycle()
     val sesionCargada by sesionVm.sesionCargada.collectAsStateWithLifecycle()
 
-    fun irAPrincipal(rol: Rol) = nav.irLimpiando(if (rol == Rol.CLIENTE) Rutas.GRAFO_DUENO else Rutas.GRAFO_VET)
+    fun irAPrincipal(rol: Rol) = nav.irLimpiando(
+        when (rol) {
+            Rol.CLIENTE -> Rutas.GRAFO_DUENO
+            Rol.ADMIN -> Rutas.GRAFO_VET
+            Rol.ADMINISTRADOR -> Rutas.GRAFO_ADMIN
+        }
+    )
 
     fun cerrarSesion() {
         sesionVm.cerrarSesion()
@@ -336,6 +344,22 @@ fun NavVet(app: VetApp) {
                             onCerrarSesion = ::cerrarSesion
                         )
                     }
+                }
+            }
+        }
+
+        // Grafo del administrador
+        navigation(startDestination = Rutas.ADMIN_PANEL, route = Rutas.GRAFO_ADMIN) {
+            composable(Rutas.ADMIN_PANEL) {
+                val vm: AdminViewModel = viewModel(
+                    factory = VetViewModelFactory { AdminViewModel(app.repository) }
+                )
+                VetTheme(Rol.ADMINISTRADOR, oscuro) {
+                    AdminScreen(
+                        vm = vm,
+                        sesion = sesionVm,
+                        onCerrarSesion = ::cerrarSesion
+                    )
                 }
             }
         }

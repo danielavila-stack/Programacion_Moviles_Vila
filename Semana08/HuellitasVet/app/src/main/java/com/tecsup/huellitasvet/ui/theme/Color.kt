@@ -15,6 +15,12 @@ val AzulContenedor = Color(0xFFDBEAFE)
 val AzulOscuro = Color(0xFF1E3A8A)
 val VetFondo = Color(0xFFF7F9FF)
 
+// Administrador (morado)
+val Morado = Color(0xFF7C3AED)
+val MoradoContenedor = Color(0xFFEDE9FE)
+val MoradoOscuro = Color(0xFF4C1D95)
+val AdminFondo = Color(0xFFFAF7FF)
+
 // Estados de la cita
 val Pendiente = Color(0xFFD97706)
 val Confirmada = Color(0xFF16A34A)

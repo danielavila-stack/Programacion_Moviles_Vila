@@ -4,9 +4,13 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.Query
 import com.tecsup.huellitasvet.data.local.entity.Usuario
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface UsuarioDao {
+
+    @Query("SELECT * FROM usuarios ORDER BY rol, nombre")
+    fun observarTodos(): Flow<List<Usuario>>
 
     @Query("SELECT * FROM usuarios WHERE correo = :correo AND clave = :clave LIMIT 1")
     suspend fun login(correo: String, clave: String): Usuario?

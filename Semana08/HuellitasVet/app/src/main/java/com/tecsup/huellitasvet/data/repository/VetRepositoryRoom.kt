@@ -24,6 +24,8 @@ class VetRepositoryRoom(private val db: VetDatabase) : VetRepository {
     private val citaDao = db.citaDao()
 
     // Usuarios
+    override fun observarUsuarios(): Flow<List<Usuario>> = usuarioDao.observarTodos()
+
     override suspend fun login(correo: String, clave: String): Usuario? =
         usuarioDao.login(correo.trim(), clave)
 
