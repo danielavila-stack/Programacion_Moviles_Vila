@@ -23,7 +23,7 @@ fun ItemEntity.aModelo() = Item(
     esFavorito = esFavorito
 )
 
-// Dto (detalle) -> Item (UI) con todo: descripción, retrato y habilidades
+// Dto (detalle) -> Item (UI) con
 fun ItemDto.aModelo(esFavorito: Boolean) = Item(
     id = uuid,
     nombre = displayName,
