@@ -9,6 +9,7 @@ import com.tecsup.valorant.data.remote.RetrofitClient
 import com.tecsup.valorant.data.repository.ItemRepository
 import com.tecsup.valorant.data.repository.ItemRepositoryImpl
 import com.tecsup.valorant.notification.Notificador
+import com.tecsup.valorant.notification.NotificadorAndroid
 
 // Crea el contenedor UNA sola vez para toda la app
 class ValorantApp : Application() {
@@ -28,7 +29,5 @@ class AppContainer(context: Context) {
     val authRepository: AuthRepository = FirebaseAuthRepository()
 
     // TEMPORAL: en el paso 15 se reemplaza por NotificadorAndroid
-    val notificador: Notificador = object : Notificador {
-        override fun mostrar(titulo: String, texto: String) {}
-    }
+    val notificador: Notificador = NotificadorAndroid(context.applicationContext)
 }
