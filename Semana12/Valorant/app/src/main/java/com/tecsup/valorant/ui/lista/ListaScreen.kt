@@ -42,9 +42,11 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import com.tecsup.valorant.domain.model.Item
 import com.tecsup.valorant.ui.UiState
+import com.tecsup.valorant.ui.components.Buscador
 import com.tecsup.valorant.ui.components.BotonCortado
 import com.tecsup.valorant.ui.components.Cargando
 import com.tecsup.valorant.ui.components.ErrorView
+import com.tecsup.valorant.ui.components.FiltroRoles
 import com.tecsup.valorant.ui.components.FormaIcono
 import com.tecsup.valorant.ui.components.FormaTarjeta
 import com.tecsup.valorant.ui.components.Vacio
@@ -70,6 +72,8 @@ fun ListaScreen(
 ) {
     val estado by vm.estado.collectAsStateWithLifecycle()
     val aviso by vm.aviso.collectAsStateWithLifecycle()
+    val rol by vm.rol.collectAsStateWithLifecycle()
+    val busqueda by vm.busqueda.collectAsStateWithLifecycle()
     val total = (estado as? UiState.Exito)?.datos?.size
 
     Scaffold(
@@ -98,6 +102,19 @@ fun ListaScreen(
                     )
                 }
         ) {
+            // Buscador por nombre (mejora con IA)
+            Buscador(
+                texto = busqueda,
+                onCambiar = vm::buscar,
+                modifier = Modifier.padding(start = 12.dp, end = 12.dp, top = 10.dp)
+            )
+            // Filtro por rol (mejora con IA)
+            FiltroRoles(
+                roles = ListaViewModel.ROLES,
+                seleccionado = rol,
+                onElegir = vm::elegirRol,
+                modifier = Modifier.padding(top = 4.dp)
+            )
             // Aviso de sin conexión
             aviso?.let { texto ->
                 Surface(color = MaterialTheme.colorScheme.errorContainer, modifier = Modifier.fillMaxWidth()) {
@@ -112,7 +129,7 @@ fun ListaScreen(
                 is UiState.Cargando -> Cargando()
                 is UiState.Error -> ErrorView(e.mensaje, onReintentar = vm::refrescar)
                 is UiState.Exito ->
-                    if (e.datos.isEmpty()) Vacio("No hay agentes guardados.")
+                    if (e.datos.isEmpty()) Vacio(if (rol == null && busqueda.isBlank()) "No hay agentes guardados." else "Ningún agente coincide con la búsqueda.")
                     else ListaAgentes(e.datos, onClick = onAbrirDetalle, onFavorito = vm::alternarFavorito)
             }
         }

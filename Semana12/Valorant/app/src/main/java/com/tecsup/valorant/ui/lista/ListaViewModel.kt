@@ -13,6 +13,7 @@ import com.tecsup.valorant.ui.mensajeDeError
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 
 class ListaViewModel(
@@ -26,13 +27,26 @@ class ListaViewModel(
     private val _aviso = MutableStateFlow<String?>(null)
     val aviso: StateFlow<String?> = _aviso.asStateFlow()
 
+    // Filtro por rol: null = "Todos"
+    private val _rol = MutableStateFlow<String?>(null)
+    val rol: StateFlow<String?> = _rol.asStateFlow()
+
+    // Texto del buscador por nombre ("" = sin búsqueda)
+    private val _busqueda = MutableStateFlow("")
+    val busqueda: StateFlow<String> = _busqueda.asStateFlow()
+
     private var refrescoTerminado = false
 
     init {
-        // La lista que ve el usuario sale de Room
+        // La lista que ve el usuario sale de Room, filtrada por rol y por nombre.
+        // combine vuelve a calcular cada vez que cambian los datos, el rol O el texto.
         viewModelScope.launch {
-            repo.items.collect { lista ->
-                if (lista.isNotEmpty() || refrescoTerminado) _estado.value = UiState.Exito(lista)
+            combine(repo.items, _rol, _busqueda) { lista, rol, texto ->
+                Triple(lista, rol, texto)
+            }.collect { (lista, rol, texto) ->
+                if (lista.isNotEmpty() || refrescoTerminado) {
+                    _estado.value = UiState.Exito(filtrarPorNombre(filtrarPorRol(lista, rol), texto))
+                }
             }
         }
         refrescar()
@@ -56,11 +70,32 @@ class ListaViewModel(
         }
     }
 
+    fun elegirRol(rol: String?) {
+        _rol.value = rol
+    }
+
+    fun buscar(texto: String) {
+        _busqueda.value = texto
+    }
+
     fun alternarFavorito(id: String) {
         viewModelScope.launch { repo.alternarFavorito(id) }
     }
 
     companion object {
+        // Los 4 roles de Valorant, tal como los devuelve la API en español
+        val ROLES = listOf("Duelista", "Iniciador", "Controlador", "Centinela")
+
+        // Función pura: fácil de probar en las pruebas unitarias
+        fun filtrarPorRol(lista: List<Item>, rol: String?): List<Item> =
+            if (rol == null) lista else lista.filter { it.rol.equals(rol, ignoreCase = true) }
+
+        // Busca por nombre sin importar mayúsculas ni espacios extra
+        fun filtrarPorNombre(lista: List<Item>, texto: String): List<Item> {
+            val t = texto.trim()
+            return if (t.isEmpty()) lista else lista.filter { it.nombre.contains(t, ignoreCase = true) }
+        }
+
         fun factory(c: AppContainer) = viewModelFactory {
             initializer { ListaViewModel(c.itemRepository, c.notificador) }
         }
