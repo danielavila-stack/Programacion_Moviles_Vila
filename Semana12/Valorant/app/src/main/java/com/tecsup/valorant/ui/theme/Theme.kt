@@ -1,57 +1,46 @@
 package com.tecsup.valorant.ui.theme
 
-import android.app.Activity
-import android.os.Build
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
-import androidx.compose.material3.dynamicDarkColorScheme
-import androidx.compose.material3.dynamicLightColorScheme
-import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.graphics.Color
 
-private val DarkColorScheme = darkColorScheme(
-    primary = Purple80,
-    secondary = PurpleGrey80,
-    tertiary = Pink80
-)
-
-private val LightColorScheme = lightColorScheme(
-    primary = Purple40,
-    secondary = PurpleGrey40,
-    tertiary = Pink40
-
-    /* Other default colors to override
-    background = Color(0xFFFFFBFE),
-    surface = Color(0xFFFFFBFE),
+private val ValorantColores = darkColorScheme(
+    primary = ValoCoral,
     onPrimary = Color.White,
+    secondary = ValoMagenta,
     onSecondary = Color.White,
-    onTertiary = Color.White,
-    onBackground = Color(0xFF1C1B1F),
-    onSurface = Color(0xFF1C1B1F),
-    */
+    tertiary = ValoLavanda,
+    background = ValoFondo,
+    onBackground = ValoTexto,
+    surface = ValoFondo,
+    onSurface = ValoTexto,
+    surfaceVariant = ValoSuperficie,
+    onSurfaceVariant = ValoTextoSuave,
+    surfaceContainerLowest = ValoFondo,
+    surfaceContainerLow = ValoSuperficie,
+    surfaceContainer = ValoSuperficie,
+    surfaceContainerHigh = ValoSuperficieAlta,
+    surfaceContainerHighest = ValoSuperficie,
+    inverseSurface = ValoSuperficieAlta,
+    outline = ValoLinea,
+    outlineVariant = ValoLinea,
+    error = Color(0xFFFF8A93),
+    errorContainer = ValoErrorFondo,
+    onErrorContainer = ValoErrorTexto
 )
 
+// La app siempre usa el tema oscuro de Valorant (los parámetros se mantienen
+// para no romper llamadas existentes, pero ya no cambian el resultado)
+@Suppress("UNUSED_PARAMETER")
 @Composable
 fun ValorantTheme(
-    darkTheme: Boolean = isSystemInDarkTheme(),
-    // Dynamic color is available on Android 12+
-    dynamicColor: Boolean = true,
+    darkTheme: Boolean = true,
+    dynamicColor: Boolean = false,
     content: @Composable () -> Unit
 ) {
-    val colorScheme = when {
-        dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
-            val context = LocalContext.current
-            if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
-        }
-
-        darkTheme -> DarkColorScheme
-        else -> LightColorScheme
-    }
-
     MaterialTheme(
-        colorScheme = colorScheme,
+        colorScheme = ValorantColores,
         typography = Typography,
         content = content
     )
