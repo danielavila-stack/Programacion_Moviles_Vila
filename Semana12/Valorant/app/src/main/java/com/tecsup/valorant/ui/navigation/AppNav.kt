@@ -9,6 +9,8 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.tecsup.valorant.AppContainer
 import com.tecsup.valorant.domain.model.Rol
+import com.tecsup.valorant.ui.admin.AdminScreen
+import com.tecsup.valorant.ui.admin.AdminViewModel
 import com.tecsup.valorant.ui.UiState
 import com.tecsup.valorant.ui.detalle.DetalleScreen
 import com.tecsup.valorant.ui.detalle.DetalleViewModel
@@ -50,7 +52,7 @@ fun AppNav(container: AppContainer) {
                 esAdmin = esAdmin,
                 onAbrirDetalle = { id -> nav.navigate("detalle/$id") },
                 onFavoritos = { nav.navigate("favoritos") },
-                onAdmin = { /* paso 14 */ },
+                onAdmin = { nav.navigate("admin") },
                 onCerrarSesion = cerrarSesion
             )
         }
@@ -70,6 +72,12 @@ fun AppNav(container: AppContainer) {
             )
         }
 
-        // (paso 14: aquí va la ruta "admin")
+        composable("admin") {
+            // Doble seguridad: aunque alguien llegue aquí, solo el admin ve el panel
+            if (esAdmin) {
+                val vm: AdminViewModel = viewModel(factory = AdminViewModel.factory(container))
+                AdminScreen(vm, onVolver = { nav.popBackStack() })
+            }
+        }
     }
 }
