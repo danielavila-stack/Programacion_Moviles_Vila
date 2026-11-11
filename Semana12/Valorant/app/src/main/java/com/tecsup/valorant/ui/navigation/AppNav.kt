@@ -8,18 +8,25 @@ import androidx.navigation.compose.rememberNavController
 import com.tecsup.valorant.AppContainer
 import com.tecsup.valorant.ui.lista.ListaScreen
 import com.tecsup.valorant.ui.lista.ListaViewModel
+import com.tecsup.valorant.ui.detalle.DetalleScreen
+import com.tecsup.valorant.ui.detalle.DetalleViewModel
 
 @Composable
 fun AppNav(container: AppContainer) {
     val nav = rememberNavController()
 
     NavHost(navController = nav, startDestination = "lista") {
+        composable("detalle/{id}") { entrada ->
+            val id = entrada.arguments?.getString("id") ?: return@composable
+            val vm: DetalleViewModel = viewModel(factory = DetalleViewModel.factory(container, id))
+            DetalleScreen(vm, onVolver = { nav.popBackStack() })
+        }
         composable("lista") {
             val vm: ListaViewModel = viewModel(factory = ListaViewModel.factory(container))
             ListaScreen(
                 vm = vm,
                 esAdmin = false,
-                onAbrirDetalle = {},
+                onAbrirDetalle = { id -> nav.navigate("detalle/$id") },
                 onFavoritos = {},
                 onAdmin = {},
                 onCerrarSesion = {}
