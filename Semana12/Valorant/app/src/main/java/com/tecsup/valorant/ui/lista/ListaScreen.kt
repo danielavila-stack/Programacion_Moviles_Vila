@@ -37,6 +37,7 @@ import com.tecsup.valorant.ui.UiState
 import com.tecsup.valorant.ui.components.Cargando
 import com.tecsup.valorant.ui.components.ErrorView
 import com.tecsup.valorant.ui.components.Vacio
+import androidx.compose.material3.Surface
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -49,6 +50,7 @@ fun ListaScreen(
     onCerrarSesion: () -> Unit
 ) {
     val estado by vm.estado.collectAsStateWithLifecycle()
+    val aviso by vm.aviso.collectAsStateWithLifecycle()
 
     Scaffold(
         topBar = {
@@ -67,7 +69,16 @@ fun ListaScreen(
         }
     ) { padding ->
         Column(Modifier.padding(padding).fillMaxSize()) {
-            // (Paso 11: aquí va el aviso de sin conexión)
+            // (aviso de sin conexión)
+            aviso?.let { texto ->
+                Surface(color = MaterialTheme.colorScheme.errorContainer, modifier = Modifier.fillMaxWidth()) {
+                    Text(
+                        texto,
+                        modifier = Modifier.padding(12.dp),
+                        color = MaterialTheme.colorScheme.onErrorContainer
+                    )
+                }
+            }
             when (val e = estado) {
                 is UiState.Cargando -> Cargando()
                 is UiState.Error -> ErrorView(e.mensaje, onReintentar = vm::refrescar)

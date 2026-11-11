@@ -39,7 +39,10 @@ class ItemRepositoryImpl(
         val esFavorito = dao.porId(id)?.esFavorito ?: false
         Result.success(api.detalle(id).data.aModelo(esFavorito))
     } catch (e: IOException) {
-        Result.failure(e)
+        // Sin internet: mostramos lo básico que está guardado en Room
+        val guardado = dao.porId(id)
+        if (guardado != null) Result.success(guardado.aModelo()) else Result.failure(e)
+
     } catch (e: HttpException) {
         Result.failure(e)
     }
