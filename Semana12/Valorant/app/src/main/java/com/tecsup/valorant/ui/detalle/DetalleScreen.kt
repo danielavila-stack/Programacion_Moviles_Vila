@@ -20,6 +20,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
+import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -31,7 +32,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import com.tecsup.valorant.domain.model.Item
@@ -104,21 +111,56 @@ private fun DetalleContenido(item: Item) {
             item { Text("Habilidades", style = MaterialTheme.typography.titleLarge) }
         }
         items(item.habilidades) { h ->
-            Row(verticalAlignment = Alignment.Top) {
-                AsyncImage(
-                    model = h.iconoUrl,
-                    contentDescription = h.nombre,
-                    modifier = Modifier
-                        .size(44.dp)
-                        .background(MaterialTheme.colorScheme.inverseSurface, RoundedCornerShape(8.dp))
-                        .padding(6.dp)
-                )
-                Spacer(Modifier.width(12.dp))
-                Column {
-                    Text(h.nombre, style = MaterialTheme.typography.titleSmall)
-                    Text(h.descripcion, style = MaterialTheme.typography.bodySmall)
+            Card(Modifier.fillMaxWidth()) {
+                Row(Modifier.padding(12.dp), verticalAlignment = Alignment.Top) {
+                    AsyncImage(
+                        model = h.iconoUrl,
+                        contentDescription = h.nombre,
+                        modifier = Modifier
+                            .size(44.dp)
+                            .background(MaterialTheme.colorScheme.inverseSurface, RoundedCornerShape(8.dp))
+                            .padding(6.dp)
+                    )
+                    Spacer(Modifier.width(12.dp))
+                    Column {
+                        Text(
+                            h.nombre,
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                        Spacer(Modifier.height(4.dp))
+                        Text(
+                            textoConEnfasis(h.descripcion),
+                            style = MaterialTheme.typography.bodyMedium,
+                            lineHeight = 20.sp
+                        )
+                    }
                 }
             }
         }
+    }
+}
+
+// La API marca las palabras clave con etiquetas del juego: <whitebold>Estrella</> o <debuffred>atrae</>
+// En vez de mostrarlas tal cual, las convertimos en negrita y color
+@Composable
+private fun textoConEnfasis(texto: String): AnnotatedString {
+    val principal = MaterialTheme.colorScheme.primary
+    val negativo = MaterialTheme.colorScheme.error   // efectos negativos (debuff) en rojo
+    val patron = Regex("<([^/>]+)>(.*?)</>", RegexOption.DOT_MATCHES_ALL)
+    val sinEtiquetas = Regex("<[^>]*>")
+
+    return buildAnnotatedString {
+        var inicio = 0
+        for (m in patron.findAll(texto)) {
+            append(texto.substring(inicio, m.range.first).replace(sinEtiquetas, ""))
+            val color = if (m.groupValues[1].startsWith("debuff")) negativo else principal
+            withStyle(SpanStyle(fontWeight = FontWeight.Bold, color = color)) {
+                append(m.groupValues[2].replace(sinEtiquetas, ""))
+            }
+            inicio = m.range.last + 1
+        }
+        append(texto.substring(inicio).replace(sinEtiquetas, ""))
     }
 }
