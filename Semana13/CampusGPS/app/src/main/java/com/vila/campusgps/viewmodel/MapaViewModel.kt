@@ -1,18 +1,23 @@
 package com.vila.campusgps.viewmodel
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.vila.campusgps.data.LugaresRepository
 import com.vila.campusgps.data.UbicacionRepository
+import com.vila.campusgps.model.Lugar
 import com.vila.campusgps.model.LugarConDistancia
+import com.vila.campusgps.model.Posicion
 import com.vila.campusgps.model.UbicacionUi
+import com.vila.campusgps.util.distanciaMetros
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import android.util.Log
-import com.vila.campusgps.model.Posicion
-import com.vila.campusgps.util.distanciaMetros
+
 class MapaViewModel(
     private val ubicacionRepo: UbicacionRepository,
     private val lugaresRepo: LugaresRepository
@@ -28,6 +33,11 @@ class MapaViewModel(
 
     private val _seleccionado = MutableStateFlow<Int?>(null)
     val seleccionado: StateFlow<Int?> = _seleccionado.asStateFlow()
+
+    // El más cercano: el primero de la lista (ya ordenada) que tenga distancia calculada
+    val masCercano: StateFlow<Lugar?> = _lugares
+        .map { lista -> lista.firstOrNull { it.metros != null }?.lugar }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
 
     fun buscar() {
         _estado.value = UbicacionUi.Buscando
@@ -48,7 +58,6 @@ class MapaViewModel(
     fun seleccionar(id: Int?) {
         _seleccionado.value = id
     }
-    // TODO Paso 7: val masCercano: StateFlow<Lugar?>
 
     // Calcula la distancia a cada lugar, ordena de menor a mayor y publica la lista
     private fun actualizarDistancias(pos: Posicion) {

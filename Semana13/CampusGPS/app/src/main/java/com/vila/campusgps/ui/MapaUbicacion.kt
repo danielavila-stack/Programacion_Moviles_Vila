@@ -2,8 +2,10 @@ package com.vila.campusgps.ui
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.key
 import androidx.compose.ui.Modifier
 import com.google.android.gms.maps.CameraUpdateFactory
+import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.GoogleMap
@@ -12,14 +14,13 @@ import com.google.maps.android.compose.rememberCameraPositionState
 import com.google.maps.android.compose.rememberUpdatedMarkerState
 import com.vila.campusgps.model.LugarConDistancia
 import com.vila.campusgps.model.UbicacionUi
-import androidx.compose.runtime.key
-import com.google.android.gms.maps.model.BitmapDescriptorFactory
 
 @Composable
 fun MapaUbicacion(
     estado: UbicacionUi,
     lugares: List<LugarConDistancia>,
     seleccionado: Int?,
+    masCercanoId: Int?,
     modifier: Modifier = Modifier
 ) {
     val camara = rememberCameraPositionState {
@@ -55,7 +56,8 @@ fun MapaUbicacion(
                 title = "Estás aquí"
             )
         }
-        // Un marcador azul por cada lugar del campus
+
+        // Un marcador por cada lugar: verde el más cercano, azul los demás
         lugares.forEach { item ->
             key(item.lugar.id) {
                 val estadoMarcador = rememberUpdatedMarkerState(
@@ -64,11 +66,16 @@ fun MapaUbicacion(
                 LaunchedEffect(seleccionado) {
                     if (item.lugar.id == seleccionado) estadoMarcador.showInfoWindow()
                 }
+                val color = if (item.lugar.id == masCercanoId)
+                    BitmapDescriptorFactory.HUE_GREEN
+                else
+                    BitmapDescriptorFactory.HUE_AZURE
+
                 Marker(
                     state = estadoMarcador,
                     title = item.lugar.nombre,
                     snippet = item.lugar.categoria,
-                    icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE)
+                    icon = BitmapDescriptorFactory.defaultMarker(color)
                 )
             }
         }
