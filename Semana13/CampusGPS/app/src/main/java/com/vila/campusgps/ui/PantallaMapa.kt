@@ -63,13 +63,13 @@ fun PantallaMapa(vm: MapaViewModel) {
                 )
             )
         }
-    ){ padding ->
+    ) { padding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
         ) {
-            // El mapa ocupa todo el espacio libre de arriba
+            // 1. El mapa ocupa todo el espacio libre de arriba
             MapaUbicacion(
                 estado = estado,
                 lugares = lugares,
@@ -79,10 +79,11 @@ fun PantallaMapa(vm: MapaViewModel) {
                     .weight(1f)
             )
 
+            // 2. Botón y estado (latitud / longitud / error)
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(16.dp),
+                    .padding(horizontal = 16.dp, vertical = 8.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Button(
@@ -91,17 +92,33 @@ fun PantallaMapa(vm: MapaViewModel) {
                 ) {
                     Text("Obtener mi ubicación")
                 }
-                Spacer(Modifier.height(8.dp))
+                Spacer(Modifier.height(4.dp))
                 when (val e = estado) {
                     is UbicacionUi.Inicial -> Text("Pulsa el botón para empezar")
                     is UbicacionUi.Buscando -> CircularProgressIndicator()
                     is UbicacionUi.Lista -> {
-                        Text("Latitud: ${e.posicion.latitud}")
-                        Text("Longitud: ${e.posicion.longitud}")
+                        Text(
+                            "Latitud: ${e.posicion.latitud}",
+                            style = MaterialTheme.typography.bodySmall
+                        )
+                        Text(
+                            "Longitud: ${e.posicion.longitud}",
+                            style = MaterialTheme.typography.bodySmall
+                        )
                     }
                     is UbicacionUi.Error -> Text(e.mensaje, color = MaterialTheme.colorScheme.error)
                 }
             }
+
+            // 3. Lista de lugares con altura fija debajo del mapa
+            ListaLugares(
+                lugares = lugares,
+                seleccionado = seleccionado,
+                onClick = { id -> vm.seleccionar(id) },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(220.dp)
+            )
         }
     }
 }
