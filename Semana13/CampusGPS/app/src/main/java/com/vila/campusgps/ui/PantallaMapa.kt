@@ -21,6 +21,8 @@ import com.vila.campusgps.viewmodel.MapaViewModel
 @Composable
 fun PantallaMapa(vm: MapaViewModel) {
     val estado by vm.estado.collectAsState()
+    val lugares by vm.lugares.collectAsState()
+    val seleccionado by vm.seleccionado.collectAsState()
     val contexto = LocalContext.current
 
     // Abre el cuadro de permiso de Android y recibe la respuesta del usuario
@@ -61,29 +63,44 @@ fun PantallaMapa(vm: MapaViewModel) {
                 )
             )
         }
-    ) { padding ->
+    ){ padding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
-                .padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Button(
-                onClick = { alPulsar() },
-                enabled = estado !is UbicacionUi.Buscando
+            // El mapa ocupa todo el espacio libre de arriba
+            MapaUbicacion(
+                estado = estado,
+                lugares = lugares,
+                seleccionado = seleccionado,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f)
+            )
+
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text("Obtener mi ubicación")
-            }
-            Spacer(Modifier.height(8.dp))
-            when (val e = estado) {
-                is UbicacionUi.Inicial -> Text("Pulsa el botón para empezar")
-                is UbicacionUi.Buscando -> CircularProgressIndicator()
-                is UbicacionUi.Lista -> {
-                    Text("Latitud: ${e.posicion.latitud}")
-                    Text("Longitud: ${e.posicion.longitud}")
+                Button(
+                    onClick = { alPulsar() },
+                    enabled = estado !is UbicacionUi.Buscando
+                ) {
+                    Text("Obtener mi ubicación")
                 }
-                is UbicacionUi.Error -> Text(e.mensaje, color = MaterialTheme.colorScheme.error)
+                Spacer(Modifier.height(8.dp))
+                when (val e = estado) {
+                    is UbicacionUi.Inicial -> Text("Pulsa el botón para empezar")
+                    is UbicacionUi.Buscando -> CircularProgressIndicator()
+                    is UbicacionUi.Lista -> {
+                        Text("Latitud: ${e.posicion.latitud}")
+                        Text("Longitud: ${e.posicion.longitud}")
+                    }
+                    is UbicacionUi.Error -> Text(e.mensaje, color = MaterialTheme.colorScheme.error)
+                }
             }
         }
     }
