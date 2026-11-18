@@ -30,6 +30,8 @@ import com.vila.campusgps.viewmodel.MapaViewModel
 fun PantallaMapa(vm: MapaViewModel) {
     val estado by vm.estado.collectAsState()
     val lugares by vm.lugares.collectAsState()
+    val lugaresVisibles by vm.lugaresVisibles.collectAsState()
+    val categoria by vm.categoria.collectAsState()
     val seleccionado by vm.seleccionado.collectAsState()
     val masCercano by vm.masCercano.collectAsState()
     val contexto = LocalContext.current
@@ -38,7 +40,6 @@ fun PantallaMapa(vm: MapaViewModel) {
     val lanzador = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
     ) { resultado ->
-        // Si concedió FINE o COARSE, busca; si no, muestra el error
         if (resultado.values.any { it }) vm.buscar() else vm.permisoDenegado()
     }
 
@@ -105,17 +106,24 @@ fun PantallaMapa(vm: MapaViewModel) {
                 }
             }
 
-            // ---------- Pantalla normal (mapa + lista) ----------
+            // ---------- Pantalla normal (filtro + mapa + lista) ----------
             else -> {
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(padding)
                 ) {
-                    // 1. El mapa ocupa todo el espacio libre de arriba
+                    // MEJORA 1: chips de categoría arriba del mapa
+                    FiltroCategorias(
+                        categorias = vm.categorias,
+                        seleccionada = categoria,
+                        onSeleccionar = { vm.filtrar(it) }
+                    )
+
+                    // 1. El mapa ocupa todo el espacio libre (solo lugares visibles)
                     MapaUbicacion(
                         estado = e,
-                        lugares = lugares,
+                        lugares = lugaresVisibles,
                         seleccionado = seleccionado,
                         masCercanoId = masCercano?.id,
                         modifier = Modifier
@@ -145,7 +153,7 @@ fun PantallaMapa(vm: MapaViewModel) {
                         }
 
                         masCercano?.let { cercano ->
-                            val metros = lugares.firstOrNull { it.lugar.id == cercano.id }?.metros
+                            val metros = lugaresVisibles.firstOrNull { it.lugar.id == cercano.id }?.metros
                             Text(
                                 buildAnnotatedString {
                                     withStyle(SpanStyle(fontWeight = FontWeight.Bold)) {
@@ -155,6 +163,15 @@ fun PantallaMapa(vm: MapaViewModel) {
                                     if (metros != null) append(" (${formatearDistancia(metros)})")
                                 },
                                 style = MaterialTheme.typography.bodySmall
+                            )
+                        }
+
+                        // MEJORA 1: cuántos lugares se están mostrando
+                        if (categoria != null) {
+                            Text(
+                                "Mostrando ${lugaresVisibles.size} de ${lugares.size} lugares",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
 
@@ -176,9 +193,9 @@ fun PantallaMapa(vm: MapaViewModel) {
                         }
                     }
 
-                    // 3. Lista de lugares con altura fija debajo del mapa
+                    // 3. Lista (solo lugares visibles)
                     ListaLugares(
-                        lugares = lugares,
+                        lugares = lugaresVisibles,
                         seleccionado = seleccionado,
                         onClick = { id -> vm.seleccionar(id) },
                         modifier = Modifier

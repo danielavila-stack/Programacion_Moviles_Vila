@@ -16,6 +16,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -36,10 +37,32 @@ class MapaViewModel(
     private val _seleccionado = MutableStateFlow<Int?>(null)
     val seleccionado: StateFlow<Int?> = _seleccionado.asStateFlow()
 
-    // El más cercano: el primero de la lista (ya ordenada) que tenga distancia calculada
-    val masCercano: StateFlow<Lugar?> = _lugares
+    // ---------- MEJORA 1: filtro por categoría ----------
+
+    // Categorías disponibles, sacadas de los lugares (sin repetir)
+    val categorias: List<String> = lugaresRepo.obtenerLugares().map { it.categoria }.distinct()
+
+    // null = "Todos"
+    private val _categoria = MutableStateFlow<String?>(null)
+    val categoria: StateFlow<String?> = _categoria.asStateFlow()
+
+    // Lo que la pantalla dibuja: la lista ordenada, filtrada por la categoría elegida
+    val lugaresVisibles: StateFlow<List<LugarConDistancia>> =
+        combine(_lugares, _categoria) { lista, cat ->
+            if (cat == null) lista else lista.filter { it.lugar.categoria == cat }
+        }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), _lugares.value)
+
+    fun filtrar(categoria: String?) {
+        _categoria.value = categoria
+        _seleccionado.value = null // la selección anterior podría quedar oculta
+    }
+
+    // El más cercano DE LO VISIBLE: el primero con distancia calculada
+    val masCercano: StateFlow<Lugar?> = lugaresVisibles
         .map { lista -> lista.firstOrNull { it.metros != null }?.lugar }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
+
+    // ------------------------------------------------------
 
     fun buscar() {
         // Antes de buscar, revisa si hay Google Play Services (a través de la interface)
