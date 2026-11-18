@@ -1,5 +1,9 @@
 package com.vila.campusgps.ui
 
+import android.Manifest
+import android.content.pm.PackageManager
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -7,7 +11,9 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
 import com.vila.campusgps.model.UbicacionUi
 import com.vila.campusgps.viewmodel.MapaViewModel
 
@@ -15,6 +21,35 @@ import com.vila.campusgps.viewmodel.MapaViewModel
 @Composable
 fun PantallaMapa(vm: MapaViewModel) {
     val estado by vm.estado.collectAsState()
+    val contexto = LocalContext.current
+
+    // Abre el cuadro de permiso de Android y recibe la respuesta del usuario
+    val lanzador = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) { resultado ->
+        // Si concedió FINE o COARSE, busca; si no, muestra el error
+        if (resultado.values.any { it }) vm.buscar() else vm.permisoDenegado()
+    }
+
+    fun alPulsar() {
+        val tieneFine = ContextCompat.checkSelfPermission(
+            contexto, Manifest.permission.ACCESS_FINE_LOCATION
+        ) == PackageManager.PERMISSION_GRANTED
+        val tieneCoarse = ContextCompat.checkSelfPermission(
+            contexto, Manifest.permission.ACCESS_COARSE_LOCATION
+        ) == PackageManager.PERMISSION_GRANTED
+
+        if (tieneFine || tieneCoarse) {
+            vm.buscar()
+        } else {
+            lanzador.launch(
+                arrayOf(
+                    Manifest.permission.ACCESS_FINE_LOCATION,
+                    Manifest.permission.ACCESS_COARSE_LOCATION
+                )
+            )
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -34,7 +69,10 @@ fun PantallaMapa(vm: MapaViewModel) {
                 .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Button(onClick = { vm.buscar() }) {
+            Button(
+                onClick = { alPulsar() },
+                enabled = estado !is UbicacionUi.Buscando
+            ) {
                 Text("Obtener mi ubicación")
             }
             Spacer(Modifier.height(8.dp))
