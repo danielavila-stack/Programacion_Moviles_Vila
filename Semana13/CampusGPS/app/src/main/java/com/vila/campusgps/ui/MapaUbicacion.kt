@@ -12,6 +12,8 @@ import com.google.maps.android.compose.rememberCameraPositionState
 import com.google.maps.android.compose.rememberUpdatedMarkerState
 import com.vila.campusgps.model.LugarConDistancia
 import com.vila.campusgps.model.UbicacionUi
+import androidx.compose.runtime.key
+import com.google.android.gms.maps.model.BitmapDescriptorFactory
 
 @Composable
 fun MapaUbicacion(
@@ -44,6 +46,18 @@ fun MapaUbicacion(
                 title = "Estás aquí"
             )
         }
-        // TODO 3 (Paso 4): un Marker por cada lugar
+        // Un marcador azul por cada lugar del campus
+        lugares.forEach { item ->
+            key(item.lugar.id) {
+                Marker(
+                    state = rememberUpdatedMarkerState(
+                        position = LatLng(item.lugar.latitud, item.lugar.longitud)
+                    ),
+                    title = item.lugar.nombre,
+                    snippet = item.lugar.categoria,
+                    icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE)
+                )
+            }
+        }
     }
 }
