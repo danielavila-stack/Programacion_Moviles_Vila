@@ -1,6 +1,7 @@
 # CentroTareas
 
-**Alumna:** Daniela Fransua Vila Ramos  
+**Alumna:** Daniela Fransua Vila Ramos
+
 **Laboratorio 14:** Hilos en Android
 
 ## Descripción
@@ -32,8 +33,13 @@ com.vila.centrotareas/
 │   ├── TareasViewModel.kt
 │   └── TareasViewModelFactory.kt
 └── ui/
-    ├── PantallaTareas.kt           las tres tarjetas
+    ├── PantallaTareas.kt           las tres tarjetas y la barra de navegación
     └── theme/
+
+res/drawable/
+├── ic_tarea.xml                    íconos de la barra de navegación (Fase 2)
+├── ic_primos.xml
+└── ic_cargas.xml
 ```
 
 ## Arquitectura MVVM + Repository
@@ -89,6 +95,28 @@ TareasRepository (interface)  --->  TareasRepositoryLocal
 | Error simulado + **Reintentar** | Recuadro rojo; al desactivar el interruptor y reintentar, éxito | Sí |
 | Rotar la pantalla durante la tarea | La tarea continúa y el progreso no se reinicia | Sí |
 | Revisar el código | `git grep` no encuentra `GlobalScope`, `runBlocking` ni `Thread.sleep` en el código final | Sí |
+
+## Fase 2 · Mejoras con IA (rama `con-ia`)
+
+Mejoras hechas con ayuda de IA (Claude), revisadas y probadas por mí, sin romper MVVM + Repository ni las reglas del laboratorio (sin `GlobalScope`, `runBlocking` ni `Thread.sleep`, y relanzando siempre la `CancellationException`). El detalle de los prompts y de lo que cambié está en [`PROMPTS.md`](PROMPTS.md).
+
+| # | Mejora | Qué hace | Capas que cambian |
+|---|---|---|---|
+| 1 | Primos con progreso | Muestra el porcentaje del cálculo de primos mientras avanza, en un círculo grande. Si se cancela, indica en qué porcentaje se quedó. | Repository + ViewModel + View |
+| 2 | Tiempo máximo | Selector *Sin límite / 2 s / 4 s*. Con `withTimeout`, si una carga pasa el límite se corta y aparece **Tardó demasiado** con el botón Reintentar. | ViewModel + View |
+| 3 | Barra de navegación inferior | Pestañas **Tarea · Primos · Cargas**: cada una muestra solo su tarjeta. La tarea con progreso también se ve en un círculo y la pestaña de cargas ocupa toda la pantalla. | View |
+
+### Capturas de las mejoras
+
+| Primos con progreso | Tiempo máximo | Barra de navegación |
+|---|---|---|
+| ![Primos con progreso](capturas/mejora_primos.jpeg) | ![Tiempo máximo](capturas/mejora_tiempo.jpeg) | ![Barra de navegación](capturas/error_navegacion.jpeg) |
+
+### Cómo se respeta MVVM en las mejoras
+
+- **Primos con progreso:** el Repository recibe una función `alAvanzar` y la llama más o menos cada 1 % del recorrido. El ViewModel guarda ese avance en el `StateFlow` `progresoPrimos` y la pantalla solo lo dibuja. `ensureActive()` sigue dentro del ciclo, así que Cancelar funciona igual.
+- **Tiempo máximo:** el límite vive en el ViewModel (`limiteMs`). `withTimeout` lanza `TimeoutCancellationException`, que también es una `CancellationException`; por eso se atrapa **antes** del `catch` que relanza la cancelación. El límite se puso como opciones y no fijo en 2 s, porque las cargas tardan 3 s y 5 s y con 2 s ninguna pasaría nunca. Con 4 s se ve la diferencia: «A la vez» pasa y «Una por una» no.
+- **Barra de navegación:** la pestaña elegida es un estado de la interfaz, así que vive en la pantalla con `rememberSaveable` (se mantiene al rotar) y no en el ViewModel. Si se inicia una tarea y se cambia de pestaña, la tarea **sigue corriendo**, porque su corrutina vive en `viewModelScope` y no en la tarjeta.
 
 ## Para pensar
 
