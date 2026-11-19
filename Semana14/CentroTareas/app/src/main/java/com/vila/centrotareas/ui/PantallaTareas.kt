@@ -139,7 +139,7 @@ fun PantallaTareas(vm: TareasViewModel) {
                 }
 
                 when (val p = primos) {
-                    is PrimosUi.Inicial -> Text("Escribe un número y pulsa Contar")
+                    is PrimosUi.Inicial -> Text("")
                     is PrimosUi.Calculando -> {
                         CircularProgressIndicator()
                         Text("Calculando...")
@@ -191,7 +191,7 @@ fun PantallaTareas(vm: TareasViewModel) {
                 }
 
                 when (val c = carga) {
-                    is CargaUi.Inicial -> Text("Elige cómo cargar los datos")
+                    is CargaUi.Inicial -> Text("")
                     is CargaUi.Cargando -> {
                         CircularProgressIndicator()
                         Text("Cargando...")
@@ -225,7 +225,7 @@ fun PantallaTareas(vm: TareasViewModel) {
                 }
 
                 Text(
-                    "«Una por una» tarda ≈ 5000 ms · «A la vez» ≈ 3000 ms",
+                    "",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
