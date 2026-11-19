@@ -20,7 +20,8 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.catch
 class MapaViewModel(
     private val ubicacionRepo: UbicacionRepository,
     private val lugaresRepo: LugaresRepository
@@ -94,6 +95,46 @@ class MapaViewModel(
 
     fun seleccionar(id: Int?) {
         _seleccionado.value = id
+    }
+    // ---------- MEJORA 3: seguimiento en vivo ----------
+
+    private var trabajoSeguimiento: Job? = null
+
+    private val _siguiendo = MutableStateFlow(false)
+    val siguiendo: StateFlow<Boolean> = _siguiendo.asStateFlow()
+
+    fun iniciarSeguimiento() {
+        if (trabajoSeguimiento != null) return // ya está siguiendo
+
+        if (!ubicacionRepo.playServicesDisponible()) {
+            _estado.value = UbicacionUi.Error(
+                "Este dispositivo no tiene Google Play Services",
+                TipoError.SIN_PLAY_SERVICES
+            )
+            return
+        }
+
+        _siguiendo.value = true
+        trabajoSeguimiento = viewModelScope.launch {
+            ubicacionRepo.seguirPosicion()
+                .catch { e ->
+                    // Si algo falla (ej. sin permiso), mostramos el error y paramos
+                    _estado.value = errorDe(e)
+                    _siguiendo.value = false
+                    trabajoSeguimiento = null
+                }
+                .collect { pos ->
+                    // Cada ubicación nueva recalcula todo, igual que buscar()
+                    _estado.value = UbicacionUi.Lista(pos)
+                    actualizarDistancias(pos)
+                }
+        }
+    }
+
+    fun detenerSeguimiento() {
+        trabajoSeguimiento?.cancel() // al cancelar, awaitClose apaga las actualizaciones
+        trabajoSeguimiento = null
+        _siguiendo.value = false
     }
 
     // Calcula la distancia a cada lugar, ordena de menor a mayor y publica la lista

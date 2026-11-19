@@ -12,6 +12,9 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -24,6 +27,7 @@ import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import com.vila.campusgps.R
 import com.vila.campusgps.model.UbicacionUi
+import com.vila.campusgps.ui.theme.VerdeCercano
 import com.vila.campusgps.util.formatearDistancia
 import com.vila.campusgps.viewmodel.MapaViewModel
 
@@ -40,32 +44,54 @@ fun PantallaMapa(
     val categoria by vm.categoria.collectAsState()
     val seleccionado by vm.seleccionado.collectAsState()
     val masCercano by vm.masCercano.collectAsState()
+    val siguiendo by vm.siguiendo.collectAsState()
     val contexto = LocalContext.current
+
+    // Recuerda qué quería hacer el usuario cuando se pidió el permiso
+    var quiereSeguir by remember { mutableStateOf(false) }
 
     // Abre el cuadro de permiso de Android y recibe la respuesta del usuario
     val lanzador = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
     ) { resultado ->
-        if (resultado.values.any { it }) vm.buscar() else vm.permisoDenegado()
+        if (resultado.values.any { it }) {
+            if (quiereSeguir) vm.iniciarSeguimiento() else vm.buscar()
+        } else {
+            vm.permisoDenegado()
+        }
+    }
+
+    fun tienePermiso(): Boolean {
+        val fine = ContextCompat.checkSelfPermission(
+            contexto, Manifest.permission.ACCESS_FINE_LOCATION
+        ) == PackageManager.PERMISSION_GRANTED
+        val coarse = ContextCompat.checkSelfPermission(
+            contexto, Manifest.permission.ACCESS_COARSE_LOCATION
+        ) == PackageManager.PERMISSION_GRANTED
+        return fine || coarse
+    }
+
+    fun pedirPermiso() {
+        lanzador.launch(
+            arrayOf(
+                Manifest.permission.ACCESS_FINE_LOCATION,
+                Manifest.permission.ACCESS_COARSE_LOCATION
+            )
+        )
     }
 
     fun alPulsar() {
-        val tieneFine = ContextCompat.checkSelfPermission(
-            contexto, Manifest.permission.ACCESS_FINE_LOCATION
-        ) == PackageManager.PERMISSION_GRANTED
-        val tieneCoarse = ContextCompat.checkSelfPermission(
-            contexto, Manifest.permission.ACCESS_COARSE_LOCATION
-        ) == PackageManager.PERMISSION_GRANTED
+        quiereSeguir = false
+        if (tienePermiso()) vm.buscar() else pedirPermiso()
+    }
 
-        if (tieneFine || tieneCoarse) {
-            vm.buscar()
+    // MEJORA 3: iniciar / detener el seguimiento en vivo
+    fun alPulsarSeguimiento() {
+        if (siguiendo) {
+            vm.detenerSeguimiento()
         } else {
-            lanzador.launch(
-                arrayOf(
-                    Manifest.permission.ACCESS_FINE_LOCATION,
-                    Manifest.permission.ACCESS_COARSE_LOCATION
-                )
-            )
+            quiereSeguir = true
+            if (tienePermiso()) vm.iniciarSeguimiento() else pedirPermiso()
         }
     }
 
@@ -153,20 +179,35 @@ fun PantallaMapa(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(horizontal = 16.dp, vertical = 8.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
-                        Button(
-                            onClick = { alPulsar() },
-                            enabled = e !is UbicacionUi.Buscando
-                        ) {
-                            Text("Obtener mi ubicación")
+                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            Button(
+                                onClick = { alPulsar() },
+                                enabled = e !is UbicacionUi.Buscando && !siguiendo
+                            ) {
+                                Text("Obtener mi ubicación")
+                            }
+                            OutlinedButton(
+                                onClick = { masCercano?.let { vm.seleccionar(it.id) } },
+                                enabled = masCercano != null
+                            ) {
+                                Text("Ir al más cercano")
+                            }
                         }
 
-                        OutlinedButton(
-                            onClick = { masCercano?.let { vm.seleccionar(it.id) } },
-                            enabled = masCercano != null
-                        ) {
-                            Text("Ir al más cercano")
+                        // MEJORA 3: botón para iniciar / detener el seguimiento en vivo
+                        FilledTonalButton(onClick = { alPulsarSeguimiento() }) {
+                            Text(if (siguiendo) "Detener seguimiento" else "Iniciar seguimiento")
+                        }
+                        if (siguiendo) {
+                            Text(
+                                "Siguiendo tu ubicación en vivo",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = VerdeCercano,
+                                fontWeight = FontWeight.Bold
+                            )
                         }
 
                         masCercano?.let { cercano ->
@@ -191,17 +232,12 @@ fun PantallaMapa(
                             )
                         }
 
-                        Spacer(Modifier.height(4.dp))
                         when (e) {
                             is UbicacionUi.Inicial -> Text("Pulsa el botón para empezar")
                             is UbicacionUi.Buscando -> CircularProgressIndicator()
                             is UbicacionUi.Lista -> {
                                 Text(
-                                    "Latitud: ${e.posicion.latitud}",
-                                    style = MaterialTheme.typography.bodySmall
-                                )
-                                Text(
-                                    "Longitud: ${e.posicion.longitud}",
+                                    "Latitud: ${e.posicion.latitud}  ·  Longitud: ${e.posicion.longitud}",
                                     style = MaterialTheme.typography.bodySmall
                                 )
                             }
@@ -217,7 +253,7 @@ fun PantallaMapa(
                         onClick = { id -> vm.seleccionar(id) },
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(220.dp)
+                            .height(200.dp)
                     )
                 }
             }
