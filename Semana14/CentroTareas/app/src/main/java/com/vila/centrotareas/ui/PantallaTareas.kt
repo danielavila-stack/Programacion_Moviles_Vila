@@ -20,6 +20,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.vila.centrotareas.model.CargaUi
 import com.vila.centrotareas.model.PrimosUi
 import com.vila.centrotareas.viewmodel.TareasViewModel
 
@@ -34,6 +35,7 @@ fun PantallaTareas(vm: TareasViewModel) {
     val progreso by vm.progreso.collectAsState()
     val corriendo by vm.corriendo.collectAsState()
     val primos by vm.primos.collectAsState()
+    val carga by vm.carga.collectAsState()
 
     // Prueba de vida: si este número deja de subir, la pantalla está congelada
     var toques by rememberSaveable { mutableIntStateOf(0) }
@@ -44,6 +46,9 @@ fun PantallaTareas(vm: TareasViewModel) {
     val numero = textoNumero.toIntOrNull()                 // null si no es un número
     val numeroValido = numero != null && numero >= 2
     val calculando = primos is PrimosUi.Calculando
+
+    // Paso 6: mientras carga, los botones se deshabilitan
+    val cargando = carga is CargaUi.Cargando
 
     Scaffold(
         topBar = {
@@ -132,7 +137,6 @@ fun PantallaTareas(vm: TareasViewModel) {
                     }
                 }
 
-                // Resultado según el estado
                 when (val p = primos) {
                     is PrimosUi.Inicial -> Text("Escribe un número y pulsa Contar")
                     is PrimosUi.Calculando -> {
@@ -140,34 +144,64 @@ fun PantallaTareas(vm: TareasViewModel) {
                         Text("Calculando...")
                     }
                     is PrimosUi.Listo -> {
-                        Surface(
-                            color = VerdeFondo,
-                            shape = RoundedCornerShape(8.dp),
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            Column(
-                                modifier = Modifier.padding(12.dp),
-                                horizontalAlignment = Alignment.CenterHorizontally
-                            ) {
-                                Text(
-                                    "Primos hasta $hastaCalculado: ${p.cantidad}",
-                                    color = VerdeTexto,
-                                    fontWeight = FontWeight.Bold,
-                                    textAlign = TextAlign.Center
-                                )
-                                Text("Tiempo: ${p.milisegundos} ms", color = VerdeTexto)
-                            }
+                        RecuadroVerde {
+                            Text(
+                                "Primos hasta $hastaCalculado: ${p.cantidad}",
+                                color = VerdeTexto,
+                                fontWeight = FontWeight.Bold,
+                                textAlign = TextAlign.Center
+                            )
+                            Text("Tiempo: ${p.milisegundos} ms", color = VerdeTexto)
                         }
                     }
                     is PrimosUi.Cancelado -> Text("Cancelado")
                 }
             }
 
-            // ---------- Tarjeta 3: dos cargas ----------
+            // ---------- Tarjeta 3: dos cargas (Paso 6) ----------
             Tarjeta(titulo = "Dos cargas") {
-                // TODO Paso 6: botones Una por una y A la vez, resultado
-                // TODO Paso 7: interruptor Simular error y botón Reintentar
-                Text("")
+                // TODO Paso 7: interruptor Simular error
+
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    OutlinedButton(
+                        onClick = { vm.cargarUnaPorUna() },
+                        enabled = !cargando
+                    ) {
+                        Text("Una por una")
+                    }
+                    Button(
+                        onClick = { vm.cargarALaVez() },
+                        enabled = !cargando
+                    ) {
+                        Text("A la vez")
+                    }
+                }
+
+                when (val c = carga) {
+                    is CargaUi.Inicial -> Text("Elige cómo cargar los datos")
+                    is CargaUi.Cargando -> {
+                        CircularProgressIndicator()
+                        Text("Cargando...")
+                    }
+                    is CargaUi.Exito -> {
+                        RecuadroVerde {
+                            Text("Modo: ${c.modo}", color = VerdeTexto, fontWeight = FontWeight.Bold)
+                            Text("Perfil: ${c.perfil}", color = VerdeTexto)
+                            Text("Pedidos: ${c.pedidos}", color = VerdeTexto)
+                            Text("Tiempo: ${c.milisegundos} ms", color = VerdeTexto)
+                        }
+                    }
+                    is CargaUi.Error -> {
+                        // TODO Paso 7: recuadro de error y botón Reintentar
+                        Text(c.mensaje, color = MaterialTheme.colorScheme.error)
+                    }
+                }
+
+                Text(
+                    "«Una por una» tarda ≈ 5000 ms · «A la vez» ≈ 3000 ms",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
             }
         }
     }
@@ -192,5 +226,21 @@ fun Tarjeta(titulo: String, contenido: @Composable ColumnScope.() -> Unit) {
             )
             contenido()
         }
+    }
+}
+
+// Recuadro verde para mostrar resultados (se usa en primos y en cargas)
+@Composable
+fun RecuadroVerde(contenido: @Composable ColumnScope.() -> Unit) {
+    Surface(
+        color = VerdeFondo,
+        shape = RoundedCornerShape(8.dp),
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Column(
+            modifier = Modifier.padding(12.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            content = contenido
+        )
     }
 }

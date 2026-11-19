@@ -6,15 +6,18 @@ import androidx.lifecycle.viewModelScope
 import com.vila.centrotareas.data.TareasRepository
 import com.vila.centrotareas.model.CargaUi
 import com.vila.centrotareas.model.PrimosUi
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import kotlinx.coroutines.CancellationException
+
 class TareasViewModel(private val repo: TareasRepository) : ViewModel() {
 
     // ----- Tarea con progreso (pasos 1 a 4)
@@ -98,6 +101,41 @@ class TareasViewModel(private val repo: TareasRepository) : ViewModel() {
     // ----- Dos cargas (pasos 6 y 7)
     private val _carga = MutableStateFlow<CargaUi>(CargaUi.Inicial)
     val carga: StateFlow<CargaUi> = _carga.asStateFlow()
-    // TODO Paso 6: fun cargarUnaPorUna() y fun cargarALaVez()
+
+    // Paso 6: primero el perfil y DESPUÉS los pedidos (≈ 2 s + 3 s = 5 s)
+    fun cargarUnaPorUna() {
+        if (_carga.value is CargaUi.Cargando) return   // no lanzar dos cargas
+
+        viewModelScope.launch {
+            _carga.value = CargaUi.Cargando
+            val inicio = System.currentTimeMillis()
+
+            val perfil = repo.cargarPerfil()
+            val pedidos = repo.cargarPedidos(false)
+
+            val ms = System.currentTimeMillis() - inicio
+            _carga.value = CargaUi.Exito("Una por una", perfil, pedidos.size, ms)
+        }
+    }
+
+    // Paso 6: las dos llamadas AL MISMO TIEMPO con async (≈ máximo(2 s, 3 s) = 3 s)
+    fun cargarALaVez() {
+        if (_carga.value is CargaUi.Cargando) return
+
+        viewModelScope.launch {
+            _carga.value = CargaUi.Cargando
+            val inicio = System.currentTimeMillis()
+
+            val (perfil, pedidos) = coroutineScope {
+                val a = async { repo.cargarPerfil() }
+                val b = async { repo.cargarPedidos(false) }
+                Pair(a.await(), b.await())
+            }
+
+            val ms = System.currentTimeMillis() - inicio
+            _carga.value = CargaUi.Exito("A la vez", perfil, pedidos.size, ms)
+        }
+    }
+
     // TODO Paso 7: simularError y manejo de errores
 }
