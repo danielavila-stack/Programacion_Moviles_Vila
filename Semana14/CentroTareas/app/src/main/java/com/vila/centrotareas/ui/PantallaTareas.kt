@@ -20,6 +20,7 @@ import com.vila.centrotareas.viewmodel.TareasViewModel
 @Composable
 fun PantallaTareas(vm: TareasViewModel) {
     val mensaje by vm.mensaje.collectAsState()
+    val progreso by vm.progreso.collectAsState()
 
     // Prueba de vida: si este número deja de subir, la pantalla está congelada
     var toques by rememberSaveable { mutableIntStateOf(0) }
@@ -48,10 +49,16 @@ fun PantallaTareas(vm: TareasViewModel) {
                     Text("Tócame: $toques")
                 }
                 Button(onClick = { vm.tareaLarga() }) {
-                    Text("Tarea larga")
+                    Text("Iniciar")
                 }
-                // TODO Paso 3: barra de progreso y porcentaje
-                // TODO Paso 4: botones Iniciar y Cancelar
+                // TODO Paso 4: botón Cancelar
+
+                // Paso 3: barra de progreso y porcentaje
+                LinearProgressIndicator(
+                    progress = { progreso },
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Text("${(progreso * 100).toInt()} %")
                 Text(mensaje)
             }
 
