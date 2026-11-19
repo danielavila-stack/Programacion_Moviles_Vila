@@ -17,7 +17,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-
+import kotlinx.coroutines.TimeoutCancellationException
+import kotlinx.coroutines.withTimeout
 class TareasViewModel(private val repo: TareasRepository) : ViewModel() {
 
     // ----- Tarea con progreso (pasos 1 a 4)
@@ -116,7 +117,21 @@ class TareasViewModel(private val repo: TareasRepository) : ViewModel() {
         _simularError.value = valor
     }
 
-    // Paso 6 + 7: primero el perfil y DESPUÉS los pedidos (≈ 5 s), con manejo de errores
+    // MEJORA 2: tiempo máximo de la carga en ms (null = sin límite)
+    private val _limiteMs = MutableStateFlow<Long?>(null)
+    val limiteMs: StateFlow<Long?> = _limiteMs.asStateFlow()
+
+    fun cambiarLimite(ms: Long?) {
+        _limiteMs.value = ms
+    }
+
+    // MEJORA 2: ejecuta el bloque con withTimeout solo si hay un límite elegido
+    private suspend fun <T> conLimite(bloque: suspend () -> T): T {
+        val limite = _limiteMs.value
+        return if (limite == null) bloque() else withTimeout(limite) { bloque() }
+    }
+
+    // Paso 6 + 7 + MEJORA 2: primero el perfil y DESPUÉS los pedidos (≈ 5 s)
     fun cargarUnaPorUna() {
         if (_carga.value is CargaUi.Cargando) return   // no lanzar dos cargas
 
@@ -124,20 +139,26 @@ class TareasViewModel(private val repo: TareasRepository) : ViewModel() {
             _carga.value = CargaUi.Cargando
             val inicio = System.currentTimeMillis()
             try {
-                val perfil = repo.cargarPerfil()
-                val pedidos = repo.cargarPedidos(_simularError.value)
+                val (perfil, pedidos) = conLimite {
+                    val p = repo.cargarPerfil()
+                    val ped = repo.cargarPedidos(_simularError.value)
+                    Pair(p, ped)
+                }
 
                 val ms = System.currentTimeMillis() - inicio
                 _carga.value = CargaUi.Exito("Una por una", perfil, pedidos.size, ms)
+            } catch (e: TimeoutCancellationException) {
+                // MEJORA 2: va ANTES que CancellationException (es una de ellas)
+                _carga.value = CargaUi.Error(mensajeTiempo())
             } catch (e: CancellationException) {
-                throw e                                 // primero dejar pasar la cancelación
+                throw e                                 // dejar pasar la cancelación real
             } catch (e: Exception) {
                 _carga.value = CargaUi.Error("No se pudo cargar: ${e.message}")
             }
         }
     }
 
-    // Paso 6 + 7: las dos llamadas AL MISMO TIEMPO con async (≈ 3 s), con manejo de errores
+    // Paso 6 + 7 + MEJORA 2: las dos llamadas AL MISMO TIEMPO con async (≈ 3 s)
     fun cargarALaVez() {
         if (_carga.value is CargaUi.Cargando) return
 
@@ -145,14 +166,18 @@ class TareasViewModel(private val repo: TareasRepository) : ViewModel() {
             _carga.value = CargaUi.Cargando
             val inicio = System.currentTimeMillis()
             try {
-                val (perfil, pedidos) = coroutineScope {
-                    val a = async { repo.cargarPerfil() }
-                    val b = async { repo.cargarPedidos(_simularError.value) }
-                    Pair(a.await(), b.await())
+                val (perfil, pedidos) = conLimite {
+                    coroutineScope {
+                        val a = async { repo.cargarPerfil() }
+                        val b = async { repo.cargarPedidos(_simularError.value) }
+                        Pair(a.await(), b.await())
+                    }
                 }
 
                 val ms = System.currentTimeMillis() - inicio
                 _carga.value = CargaUi.Exito("A la vez", perfil, pedidos.size, ms)
+            } catch (e: TimeoutCancellationException) {
+                _carga.value = CargaUi.Error(mensajeTiempo())
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
@@ -160,6 +185,11 @@ class TareasViewModel(private val repo: TareasRepository) : ViewModel() {
                 _carga.value = CargaUi.Error("No se pudo cargar: ${e.message}")
             }
         }
+    }
+
+    private fun mensajeTiempo(): String {
+        val segundos = (_limiteMs.value ?: 0L) / 1000
+        return "Tardó demasiado (más de $segundos s)"
     }
 
     // Paso 7: Reintentar vuelve a ejecutar la carga "A la vez"

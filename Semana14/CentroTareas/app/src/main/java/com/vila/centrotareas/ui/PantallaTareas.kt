@@ -38,6 +38,7 @@ fun PantallaTareas(vm: TareasViewModel) {
     val progresoPrimos by vm.progresoPrimos.collectAsState()
     val carga by vm.carga.collectAsState()
     val simularError by vm.simularError.collectAsState()
+    val limiteMs by vm.limiteMs.collectAsState()
 
     // Prueba de vida: si este número deja de subir, la pantalla está congelada
     var toques by rememberSaveable { mutableIntStateOf(0) }
@@ -183,6 +184,32 @@ fun PantallaTareas(vm: TareasViewModel) {
                         enabled = !cargando
                     )
                     Text("Simular error")
+                }
+                // MEJORA 2: selector de tiempo máximo
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    modifier = Modifier.align(Alignment.Start)
+                ) {
+                    Text("Tiempo máximo:", style = MaterialTheme.typography.bodyMedium)
+                    FilterChip(
+                        selected = limiteMs == null,
+                        onClick = { vm.cambiarLimite(null) },
+                        label = { Text("Sin límite") },
+                        enabled = !cargando
+                    )
+                    FilterChip(
+                        selected = limiteMs == 2000L,
+                        onClick = { vm.cambiarLimite(2000L) },
+                        label = { Text("2 s") },
+                        enabled = !cargando
+                    )
+                    FilterChip(
+                        selected = limiteMs == 4000L,
+                        onClick = { vm.cambiarLimite(4000L) },
+                        label = { Text("4 s") },
+                        enabled = !cargando
+                    )
                 }
 
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
