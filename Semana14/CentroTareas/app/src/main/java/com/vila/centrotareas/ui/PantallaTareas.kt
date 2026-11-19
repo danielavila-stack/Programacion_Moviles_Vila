@@ -21,6 +21,7 @@ import com.vila.centrotareas.viewmodel.TareasViewModel
 fun PantallaTareas(vm: TareasViewModel) {
     val mensaje by vm.mensaje.collectAsState()
     val progreso by vm.progreso.collectAsState()
+    val corriendo by vm.corriendo.collectAsState()
 
     // Prueba de vida: si este número deja de subir, la pantalla está congelada
     var toques by rememberSaveable { mutableIntStateOf(0) }
@@ -48,10 +49,22 @@ fun PantallaTareas(vm: TareasViewModel) {
                 Button(onClick = { toques++ }) {
                     Text("Tócame: $toques")
                 }
-                Button(onClick = { vm.tareaLarga() }) {
-                    Text("Iniciar")
+
+                // Paso 4: Iniciar deshabilitado mientras corre; Cancelar solo mientras corre
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Button(
+                        onClick = { vm.tareaLarga() },
+                        enabled = !corriendo
+                    ) {
+                        Text("Iniciar")
+                    }
+                    OutlinedButton(
+                        onClick = { vm.cancelar() },
+                        enabled = corriendo
+                    ) {
+                        Text("Cancelar")
+                    }
                 }
-                // TODO Paso 4: botón Cancelar
 
                 // Paso 3: barra de progreso y porcentaje
                 LinearProgressIndicator(
