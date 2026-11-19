@@ -36,6 +36,7 @@ fun PantallaTareas(vm: TareasViewModel) {
     val corriendo by vm.corriendo.collectAsState()
     val primos by vm.primos.collectAsState()
     val carga by vm.carga.collectAsState()
+    val simularError by vm.simularError.collectAsState()
 
     // Prueba de vida: si este número deja de subir, la pantalla está congelada
     var toques by rememberSaveable { mutableIntStateOf(0) }
@@ -158,9 +159,21 @@ fun PantallaTareas(vm: TareasViewModel) {
                 }
             }
 
-            // ---------- Tarjeta 3: dos cargas (Paso 6) ----------
+            // ---------- Tarjeta 3: dos cargas (Pasos 6 y 7) ----------
             Tarjeta(titulo = "Dos cargas") {
-                // TODO Paso 7: interruptor Simular error
+                // Paso 7: interruptor Simular error
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    modifier = Modifier.align(Alignment.Start)
+                ) {
+                    Switch(
+                        checked = simularError,
+                        onCheckedChange = { vm.cambiarSimularError(it) },
+                        enabled = !cargando
+                    )
+                    Text("Simular error")
+                }
 
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     OutlinedButton(
@@ -192,8 +205,22 @@ fun PantallaTareas(vm: TareasViewModel) {
                         }
                     }
                     is CargaUi.Error -> {
-                        // TODO Paso 7: recuadro de error y botón Reintentar
-                        Text(c.mensaje, color = MaterialTheme.colorScheme.error)
+                        // Paso 7: recuadro de error y botón Reintentar
+                        Surface(
+                            color = MaterialTheme.colorScheme.errorContainer,
+                            shape = RoundedCornerShape(8.dp),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text(
+                                c.mensaje,
+                                color = MaterialTheme.colorScheme.onErrorContainer,
+                                textAlign = TextAlign.Center,
+                                modifier = Modifier.padding(12.dp)
+                            )
+                        }
+                        OutlinedButton(onClick = { vm.reintentar() }) {
+                            Text("Reintentar")
+                        }
                     }
                 }
 
