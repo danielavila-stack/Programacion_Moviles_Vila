@@ -1,6 +1,7 @@
 # CampusGPS
 
 **Alumna:** Daniela Fransua Vila Ramos
+
 **Laboratorio 13:** Localización Geográfica
 
 ## Descripción
@@ -10,6 +11,7 @@ CampusGPS es una app Android que obtiene la ubicación del celular, la muestra e
 La app sigue funcionando aunque el usuario niegue el permiso, apague el GPS o no tenga Google Play Services: en cada caso muestra un mensaje claro y una acción útil.
 
 **Tecnología:** Kotlin + Jetpack Compose + Material 3 (sin XML), Google Play Services Location (`FusedLocationProviderClient`), Maps Compose.
+
 **Patrón:** MVVM + Repository (interface).
 
 ## Estructura de paquetes
@@ -67,6 +69,7 @@ LugaresRepository    ---> LugaresRepositoryLocal (los 5 lugares fijos)
 | Lista ordenada | Error: permiso denegado | Error: GPS apagado |
 |---|---|---|
 | ![Lista](capturas/lista_ordenada.jpeg) | ![Error permiso](capturas/error.jpeg) | ![Error GPS](capturas/error1.jpeg) |
+
 ## Pruebas de aceptación
 
 | Prueba | Resultado esperado | OK |
@@ -84,6 +87,28 @@ LugaresRepository    ---> LugaresRepositoryLocal (los 5 lugares fijos)
 | Rotar la pantalla | No se pierden la ubicación ni la lista | Sí |
 | Revisar el repositorio | `git grep` no encuentra la clave y `local.properties` no está subido | Sí |
 
+## Fase 2 · Mejoras con IA (rama `con-ia`)
+
+Mejoras hechas con ayuda de IA (Claude), revisadas y probadas por mí, sin romper MVVM + Repository. El detalle de los prompts y de lo que cambié está en [`PROMPTS.md`](PROMPTS.md).
+
+| # | Mejora | Qué hace | Capas que cambian |
+|---|---|---|---|
+| 1 | Filtro por categoría | Chips (Todos, Estudio, Comida, Eventos, Servicios) que muestran solo esos lugares en el mapa y en la lista. El más cercano pasa a ser el de la categoría elegida. | ViewModel + View |
+| 2 | Modo oscuro e íconos | Botón para cambiar entre modo claro y oscuro; en modo oscuro el mapa usa `MapStyleOptions`. Las tarjetas muestran un ícono por categoría y el más cercano se pinta de verde. | View |
+| 3 | Seguimiento en vivo | Botón Iniciar/Detener seguimiento. `requestLocationUpdates` convertido en un `Flow` con `callbackFlow`: el marcador, las distancias, el orden y el más cercano se actualizan mientras caminas. | Repository + ViewModel + View |
+
+### Capturas de las mejoras
+
+| Filtro por categoría | Modo oscuro | Seguimiento en vivo |
+|---|---|---|
+| ![Filtro](capturas/mejora_filtro.jpeg) | ![Modo oscuro](capturas/mejora_oscuro.jpeg) | ![Seguimiento](capturas/mejora_seguimiento.jpeg) |
+
+### Cómo se respeta MVVM en las mejoras
+
+- **Filtro:** el filtro se aplica en el ViewModel con `combine(_lugares, _categoria)` y se publica en `lugaresVisibles`. Los chips (`FiltroCategorias`) solo avisan qué se tocó.
+- **Modo oscuro:** es un estado de la interfaz, así que vive en `MainActivity` con `rememberSaveable` (se mantiene al rotar) y no en el ViewModel.
+- **Seguimiento:** `FusedLocationProviderClient` sigue solo en el Repository (`seguirPosicion(): Flow<Posicion>`). El ViewModel recoge el Flow y recalcula las distancias; al detener o cerrar la app, `awaitClose` apaga las actualizaciones para no gastar batería.
+
 ## Configuración de la clave de Maps
 
 La clave de API **no está en el repositorio**. Para ejecutar el proyecto:
@@ -91,7 +116,7 @@ La clave de API **no está en el repositorio**. Para ejecutar el proyecto:
 1. Crear una clave en Google Cloud con **Maps SDK for Android** habilitado, restringida al paquete `com.vila.campusgps` y a la huella SHA-1 del equipo (`./gradlew signingReport`).
 2. Agregarla en `local.properties` (archivo que está en `.gitignore`):
    ```properties
-   MAPS_API_KEY=mi_clave
+   MAPS_API_KEY=tu_clave
    ```
 3. `app/build.gradle.kts` la lee y la pasa al Manifest con `manifestPlaceholders["MAPS_API_KEY"]`, y el `<meta-data android:name="com.google.android.geo.API_KEY">` la usa.
 
