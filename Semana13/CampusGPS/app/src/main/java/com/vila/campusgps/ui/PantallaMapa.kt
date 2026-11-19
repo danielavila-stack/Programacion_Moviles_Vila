@@ -15,19 +15,25 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
+import com.vila.campusgps.R
 import com.vila.campusgps.model.UbicacionUi
 import com.vila.campusgps.util.formatearDistancia
 import com.vila.campusgps.viewmodel.MapaViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun PantallaMapa(vm: MapaViewModel) {
+fun PantallaMapa(
+    vm: MapaViewModel,
+    modoOscuro: Boolean,
+    onCambiarTema: () -> Unit
+) {
     val estado by vm.estado.collectAsState()
     val lugares by vm.lugares.collectAsState()
     val lugaresVisibles by vm.lugaresVisibles.collectAsState()
@@ -78,8 +84,18 @@ fun PantallaMapa(vm: MapaViewModel) {
                 title = { Text("CampusGPS") },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.primary,
-                    titleContentColor = MaterialTheme.colorScheme.onPrimary
-                )
+                    titleContentColor = MaterialTheme.colorScheme.onPrimary,
+                    actionIconContentColor = MaterialTheme.colorScheme.onPrimary
+                ),
+                actions = {
+                    // MEJORA 2: botón para cambiar entre modo claro y oscuro
+                    IconButton(onClick = onCambiarTema) {
+                        Icon(
+                            painter = painterResource(R.drawable.ic_modo_oscuro),
+                            contentDescription = if (modoOscuro) "Cambiar a modo claro" else "Cambiar a modo oscuro"
+                        )
+                    }
+                }
             )
         }
     ) { padding ->
@@ -120,18 +136,19 @@ fun PantallaMapa(vm: MapaViewModel) {
                         onSeleccionar = { vm.filtrar(it) }
                     )
 
-                    // 1. El mapa ocupa todo el espacio libre (solo lugares visibles)
+                    // El mapa ocupa todo el espacio libre (solo lugares visibles)
                     MapaUbicacion(
                         estado = e,
                         lugares = lugaresVisibles,
                         seleccionado = seleccionado,
                         masCercanoId = masCercano?.id,
+                        modoOscuro = modoOscuro,
                         modifier = Modifier
                             .fillMaxWidth()
                             .weight(1f)
                     )
 
-                    // 2. Botones y estado
+                    // Botones y estado
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -166,7 +183,6 @@ fun PantallaMapa(vm: MapaViewModel) {
                             )
                         }
 
-                        // MEJORA 1: cuántos lugares se están mostrando
                         if (categoria != null) {
                             Text(
                                 "Mostrando ${lugaresVisibles.size} de ${lugares.size} lugares",
@@ -193,10 +209,11 @@ fun PantallaMapa(vm: MapaViewModel) {
                         }
                     }
 
-                    // 3. Lista (solo lugares visibles)
+                    // Lista (solo lugares visibles), con íconos y el más cercano en verde
                     ListaLugares(
                         lugares = lugaresVisibles,
                         seleccionado = seleccionado,
+                        masCercanoId = masCercano?.id,
                         onClick = { id -> vm.seleccionar(id) },
                         modifier = Modifier
                             .fillMaxWidth()
