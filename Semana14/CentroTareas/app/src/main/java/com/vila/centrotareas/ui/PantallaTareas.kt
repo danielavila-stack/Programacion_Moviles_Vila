@@ -7,6 +7,9 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -17,6 +20,9 @@ import com.vila.centrotareas.viewmodel.TareasViewModel
 @Composable
 fun PantallaTareas(vm: TareasViewModel) {
     val mensaje by vm.mensaje.collectAsState()
+
+    // Prueba de vida: si este número deja de subir, la pantalla está congelada
+    var toques by rememberSaveable { mutableIntStateOf(0) }
 
     Scaffold(
         topBar = {
@@ -38,7 +44,12 @@ fun PantallaTareas(vm: TareasViewModel) {
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             Tarjeta(titulo = "Tarea con progreso") {
-                // TODO Paso 1: botón Tócame (contador) y botón Tarea larga (MAL)
+                Button(onClick = { toques++ }) {
+                    Text("Tócame: $toques")
+                }
+                Button(onClick = { vm.tareaLargaMala() }) {
+                    Text("Tarea larga (MAL)")
+                }
                 // TODO Paso 3: barra de progreso y porcentaje
                 // TODO Paso 4: botones Iniciar y Cancelar
                 Text(mensaje)
