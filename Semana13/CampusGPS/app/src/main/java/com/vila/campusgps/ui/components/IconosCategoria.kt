@@ -1,4 +1,4 @@
-package com.vila.campusgps.ui
+package com.vila.campusgps.ui.components
 
 import androidx.annotation.DrawableRes
 import com.vila.campusgps.R

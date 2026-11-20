@@ -30,7 +30,7 @@ import com.vila.campusgps.model.UbicacionUi
 import com.vila.campusgps.ui.theme.VerdeCercano
 import com.vila.campusgps.util.formatearDistancia
 import com.vila.campusgps.viewmodel.MapaViewModel
-
+import com.vila.campusgps.ui.components.FiltroCategorias
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PantallaMapa(

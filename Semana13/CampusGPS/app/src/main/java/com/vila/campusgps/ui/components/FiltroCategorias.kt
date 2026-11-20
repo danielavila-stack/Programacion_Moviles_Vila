@@ -1,4 +1,4 @@
-package com.vila.campusgps.ui
+package com.vila.campusgps.ui.components
 
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement

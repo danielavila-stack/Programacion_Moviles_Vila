@@ -17,7 +17,9 @@ import androidx.compose.ui.unit.dp
 import com.vila.campusgps.model.LugarConDistancia
 import com.vila.campusgps.ui.theme.VerdeCercano
 import com.vila.campusgps.util.formatearDistancia
-
+import androidx.compose.foundation.border
+import androidx.compose.ui.graphics.compositeOver
+import com.vila.campusgps.ui.components.iconoCategoria
 @Composable
 fun ListaLugares(
     lugares: List<LugarConDistancia>,
@@ -37,10 +39,12 @@ fun ListaLugares(
             val primario = MaterialTheme.colorScheme.primary
 
             // Colores según el estado de la tarjeta
+            // Colores sólidos: si el fondo es transparente, la sombra de ElevatedCard se ve a través
+            val superficie = MaterialTheme.colorScheme.surface
             val fondoTarjeta = when {
-                esCercano -> VerdeCercano.copy(alpha = 0.15f)
-                esSeleccionado -> primario.copy(alpha = 0.12f)
-                else -> MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+                esCercano -> VerdeCercano.copy(alpha = 0.15f).compositeOver(superficie)
+                esSeleccionado -> primario.copy(alpha = 0.12f).compositeOver(superficie)
+                else -> MaterialTheme.colorScheme.surfaceContainerLow
             }
             val borde = when {
                 esSeleccionado -> BorderStroke(1.dp, primario)
@@ -51,11 +55,16 @@ fun ListaLugares(
             val colorIcono = if (esCercano) Color.White else primario
             val colorDistancia = if (esCercano) VerdeCercano else primario
 
-            Card(
+            ElevatedCard(
                 onClick = { onClick(item.lugar.id) },
-                modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(containerColor = fondoTarjeta),
-                border = borde
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .then(
+                        // ElevatedCard no tiene "border": se agrega con un Modifier
+                        if (borde != null) Modifier.border(borde, CardDefaults.elevatedShape)
+                        else Modifier
+                    ),
+                colors = CardDefaults.elevatedCardColors(containerColor = fondoTarjeta)
             ) {
                 Row(
                     modifier = Modifier
