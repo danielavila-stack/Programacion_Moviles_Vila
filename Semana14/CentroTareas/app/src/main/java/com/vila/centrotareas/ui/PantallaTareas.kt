@@ -1,6 +1,5 @@
 package com.vila.centrotareas.ui
 
-import androidx.annotation.DrawableRes
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -16,31 +15,21 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.vila.centrotareas.R
 import com.vila.centrotareas.model.CargaUi
 import com.vila.centrotareas.model.PrimosUi
+import com.vila.centrotareas.ui.components.BarraNavegacion
+import com.vila.centrotareas.ui.components.CirculoProgreso
+import com.vila.centrotareas.ui.components.RecuadroVerde
+import com.vila.centrotareas.ui.components.Tarjeta
+import com.vila.centrotareas.ui.theme.VerdeFondo
+import com.vila.centrotareas.ui.theme.VerdeTexto
 import com.vila.centrotareas.viewmodel.TareasViewModel
 
-// Colores del recuadro de resultado (verde)
-private val VerdeFondo = Color(0xFFE3F2E5)
-private val VerdeTexto = Color(0xFF1B5E20)
-
-// MEJORA 3: las pestañas de la barra inferior
-private data class Pestana(val titulo: String, @DrawableRes val icono: Int)
-
-private val pestanas = listOf(
-    Pestana("Tarea", R.drawable.ic_tarea),
-    Pestana("Primos", R.drawable.ic_primos),
-    Pestana("Cargas", R.drawable.ic_cargas)
-)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -65,17 +54,11 @@ fun PantallaTareas(vm: TareasViewModel) {
             )
         },
         bottomBar = {
-            // MEJORA 3: barra de navegación inferior
-            NavigationBar {
-                pestanas.forEachIndexed { indice, p ->
-                    NavigationBarItem(
-                        selected = pestana == indice,
-                        onClick = { pestana = indice },
-                        icon = { Icon(painterResource(p.icono), contentDescription = p.titulo) },
-                        label = { Text(p.titulo) }
-                    )
-                }
-            }
+            // MEJORA 3: barra de navegación inferior (componente en ui/components)
+            BarraNavegacion(
+                seleccionada = pestana,
+                onSeleccionar = { pestana = it }
+            )
         }
     ) { padding ->
         // Cargas ocupa toda la pantalla (sin scroll); Tarea y Primos pueden hacer scroll
@@ -363,80 +346,5 @@ fun TarjetaCargas(vm: TareasViewModel, modifier: Modifier = Modifier) {
                 }
             }
         }
-    }
-}
-
-// Círculo de progreso con el porcentaje y un texto al centro (lo usan Tarea y Primos)
-@Composable
-fun CirculoProgreso(progreso: Float, texto: String, tamano: Dp) {
-    Box(
-        contentAlignment = Alignment.Center,
-        modifier = Modifier
-            .size(tamano)
-            .padding(8.dp)
-    ) {
-        CircularProgressIndicator(
-            progress = { progreso },
-            modifier = Modifier.fillMaxSize(),
-            strokeWidth = 14.dp,
-            trackColor = MaterialTheme.colorScheme.surfaceVariant
-        )
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Text(
-                "${(progreso * 100).toInt()} %",
-                fontSize = 44.sp,
-                fontWeight = FontWeight.Bold
-            )
-            Text(
-                texto,
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        }
-    }
-}
-
-// Tarjeta con el título en azul; se reutiliza para las tres tareas.
-// llenarAlto = true hace que su contenido use todo el alto (lo usa Cargas)
-@Composable
-fun Tarjeta(
-    titulo: String,
-    modifier: Modifier = Modifier,
-    llenarAlto: Boolean = false,
-    contenido: @Composable ColumnScope.() -> Unit
-) {
-    Card(modifier = modifier.fillMaxWidth()) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .then(if (llenarAlto) Modifier.fillMaxHeight() else Modifier)
-                .padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            Text(
-                titulo,
-                color = MaterialTheme.colorScheme.primary,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.align(Alignment.Start)
-            )
-            contenido()
-        }
-    }
-}
-
-// Recuadro verde para mostrar resultados (se usa en primos)
-@Composable
-fun RecuadroVerde(contenido: @Composable ColumnScope.() -> Unit) {
-    Surface(
-        color = VerdeFondo,
-        shape = RoundedCornerShape(8.dp),
-        modifier = Modifier.fillMaxWidth()
-    ) {
-        Column(
-            modifier = Modifier.padding(12.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            content = contenido
-        )
     }
 }
