@@ -6,10 +6,13 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.vila.murocampus.ui.theme.EtiquetaAmarilla
+import com.vila.murocampus.ui.theme.EtiquetaAzul
 
 // Tarjeta de una publicación: etiqueta "Usuario N", título en negrita y el texto
 @Composable
@@ -30,14 +33,19 @@ fun TarjetaPost(
             modifier = Modifier.padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
+            // Usuarios impares en azul y pares en amarillo
+            val esPar = userId % 2 == 0
+            val fondo = if (esPar) EtiquetaAmarilla else EtiquetaAzul
+            val letra = if (esPar) Color(0xFF3E2A00) else Color.White
+
             Surface(
-                color = MaterialTheme.colorScheme.primaryContainer,
+                color = fondo,
                 shape = MaterialTheme.shapes.small
             ) {
                 Text(
                     "Usuario $userId",
                     style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.onPrimaryContainer,
+                    color = letra,
                     modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
                 )
             }

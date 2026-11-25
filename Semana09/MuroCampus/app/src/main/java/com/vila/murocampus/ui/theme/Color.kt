@@ -11,3 +11,6 @@ val PurpleGrey40 = Color(0xFF625b71)
 val Pink40 = Color(0xFF7D5260)
 val AzulMuro = Color(0xFF1565C0)        // azul del tema (modo claro)
 val AzulMuroClaro = Color(0xFF90CAF9)   // azul para modo oscuro
+// Colores de la etiqueta "Usuario N"
+val EtiquetaAzul = Color(0xFF1565C0)
+val EtiquetaAmarilla = Color(0xFFF2B233)
