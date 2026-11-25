@@ -14,7 +14,7 @@ import com.vila.murocampus.viewmodel.UiState
 
 // La pantalla solo dibuja el estado: nunca llama a Retrofit
 @Composable
-fun PantallaLista(vm: PostsViewModel, modifier: Modifier = Modifier) {
+fun PantallaLista(vm: PostsViewModel, onAbrir: (Int) -> Unit, modifier: Modifier = Modifier) {
     val estado by vm.lista.collectAsStateWithLifecycle()
 
     when (val e = estado) {
@@ -35,7 +35,9 @@ fun PantallaLista(vm: PostsViewModel, modifier: Modifier = Modifier) {
                 TarjetaPost(
                     userId = post.userId,
                     titulo = post.title,
-                    cuerpo = post.body
+                    cuerpo = post.body,
+                    onClick = { onAbrir(post.id) }
+
                 )
             }
         }

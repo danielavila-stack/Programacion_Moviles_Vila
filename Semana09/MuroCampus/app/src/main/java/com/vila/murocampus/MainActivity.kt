@@ -6,8 +6,13 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.*
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.vila.murocampus.ui.PantallaDetalle
 import com.vila.murocampus.ui.PantallaLista
 import com.vila.murocampus.ui.theme.MuroCampusTheme
 import com.vila.murocampus.viewmodel.PostsViewModel
@@ -23,6 +28,9 @@ class MainActivity : ComponentActivity() {
                 // La Factory crea el ViewModel con el Repository y la API
                 val vm: PostsViewModel = viewModel(factory = PostsViewModelFactory())
 
+                // Qué publicación está abierta: null = se ve la lista
+                var idSeleccionado by rememberSaveable { mutableStateOf<Int?>(null) }
+
                 Scaffold(
                     topBar = {
                         TopAppBar(
@@ -34,11 +42,24 @@ class MainActivity : ComponentActivity() {
                         )
                     }
                 ) { padding ->
-                    // Paso 6: la lista de publicaciones
-                    PantallaLista(
-                        vm = vm,
-                        modifier = Modifier.padding(padding)
-                    )
+                    if (idSeleccionado == null) {
+                        // Paso 6: la lista
+                        PantallaLista(
+                            vm = vm,
+                            onAbrir = { id ->
+                                idSeleccionado = id
+                                vm.abrir(id)
+                            },
+                            modifier = Modifier.padding(padding)
+                        )
+                    } else {
+                        // Paso 7: el detalle con comentarios
+                        PantallaDetalle(
+                            vm = vm,
+                            onVolver = { idSeleccionado = null },
+                            modifier = Modifier.padding(padding)
+                        )
+                    }
                 }
             }
         }
