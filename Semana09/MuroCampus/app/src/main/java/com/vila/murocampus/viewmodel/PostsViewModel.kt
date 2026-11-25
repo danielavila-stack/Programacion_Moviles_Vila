@@ -10,8 +10,11 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 // Lo que muestra la pantalla de detalle: la publicación y sus comentarios
@@ -50,6 +53,32 @@ class PostsViewModel(private val repo: PostRepository) : ViewModel() {
         _usuarioFiltro.value = userId
         cargar()
     }
+
+    // ---------- Búsqueda (Fase 2 · Mejora 2) ----------
+    // Texto escrito en el campo de búsqueda
+    private val _busqueda = MutableStateFlow("")
+    val busqueda: StateFlow<String> = _busqueda.asStateFlow()
+
+    fun buscar(texto: String) {
+        _busqueda.value = texto
+    }
+
+    // Lo que dibuja la pantalla: la lista descargada + el texto de búsqueda.
+    // Se recalcula cada vez que cambia cualquiera de los dos. NO llama a la red.
+    val listaVisible: StateFlow<UiState<List<Post>>> =
+        combine(_lista, _busqueda) { estado, texto ->
+            if (estado is UiState.Exito && texto.isNotBlank()) {
+                UiState.Exito(
+                    estado.datos.filter { it.title.contains(texto.trim(), ignoreCase = true) }
+                )
+            } else {
+                estado   // Cargando, Error o sin texto: se muestra tal cual
+            }
+        }.stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5_000),
+            initialValue = UiState.Cargando
+        )
 
     // ---------- Detalle (Paso 7) ----------
     private val _detalle = MutableStateFlow<UiState<DetalleUi>>(UiState.Cargando)
