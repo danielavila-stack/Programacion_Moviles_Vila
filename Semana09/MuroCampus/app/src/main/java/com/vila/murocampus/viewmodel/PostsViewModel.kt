@@ -19,19 +19,35 @@ data class DetalleUi(val post: Post, val comentarios: List<Comentario>)
 // Solo conoce la interface PostRepository: nada de Retrofit, PostApi ni Context
 class PostsViewModel(private val repo: PostRepository) : ViewModel() {
 
-    // ---------- Lista (Paso 6) ----------
+    // ---------- Lista (Paso 6) + Filtro (Paso 8) ----------
     private val _lista = MutableStateFlow<UiState<List<Post>>>(UiState.Cargando)
     val lista: StateFlow<UiState<List<Post>>> = _lista.asStateFlow()
+
+    // Usuario elegido en los chips: null = Todos
+    private val _usuarioFiltro = MutableStateFlow<Int?>(null)
+    val usuarioFiltro: StateFlow<Int?> = _usuarioFiltro.asStateFlow()
+
+    private var trabajoLista: Job? = null   // si tocas chips rápido, se cancela la carga anterior
 
     init { cargar() }   // al crearse, descarga la lista
 
     fun cargar() {
-        viewModelScope.launch {
+        trabajoLista?.cancel()
+        trabajoLista = viewModelScope.launch {
             _lista.value = UiState.Cargando
-            repo.listar()
+            val filtro = _usuarioFiltro.value
+            // Sin filtro: GET posts. Con filtro: GET posts?userId=N
+            val resultado = if (filtro == null) repo.listar() else repo.porUsuario(filtro)
+            resultado
                 .onSuccess { _lista.value = UiState.Exito(it) }
                 .onFailure { _lista.value = UiState.Error(mensajeDe(it)) }
         }
+    }
+
+    // Guarda el filtro y vuelve a cargar
+    fun filtrar(userId: Int?) {
+        _usuarioFiltro.value = userId
+        cargar()
     }
 
     // ---------- Detalle (Paso 7) ----------
