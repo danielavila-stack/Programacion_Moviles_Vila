@@ -11,7 +11,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.vila.murocampus.ui.PantallaCrear
 import com.vila.murocampus.ui.PantallaDetalle
 import com.vila.murocampus.ui.PantallaLista
 import com.vila.murocampus.ui.theme.MuroCampusTheme
@@ -30,6 +32,10 @@ class MainActivity : ComponentActivity() {
 
                 // Qué publicación está abierta: null = se ve la lista
                 var idSeleccionado by rememberSaveable { mutableStateOf<Int?>(null) }
+                // true = se ve el formulario de crear
+                var creando by rememberSaveable { mutableStateOf(false) }
+
+                val enLista = idSeleccionado == null && !creando
 
                 Scaffold(
                     topBar = {
@@ -40,23 +46,41 @@ class MainActivity : ComponentActivity() {
                                 titleContentColor = MaterialTheme.colorScheme.onPrimary
                             )
                         )
+                    },
+                    floatingActionButton = {
+                        // Paso 9: el botón + solo aparece en la lista
+                        if (enLista) {
+                            FloatingActionButton(onClick = {
+                                vm.limpiarCreacion()
+                                creando = true
+                            }) {
+                                Text("+", fontSize = 26.sp)
+                            }
+                        }
                     }
                 ) { padding ->
-                    if (idSeleccionado == null) {
-                        // Paso 6: la lista
-                        PantallaLista(
+                    when {
+                        // Paso 9: crear publicación
+                        creando -> PantallaCrear(
+                            vm = vm,
+                            onVolver = { creando = false },
+                            modifier = Modifier.padding(padding)
+                        )
+
+                        // Paso 7: detalle con comentarios
+                        idSeleccionado != null -> PantallaDetalle(
+                            vm = vm,
+                            onVolver = { idSeleccionado = null },
+                            modifier = Modifier.padding(padding)
+                        )
+
+                        // Pasos 6 y 8: lista con filtro
+                        else -> PantallaLista(
                             vm = vm,
                             onAbrir = { id ->
                                 idSeleccionado = id
                                 vm.abrir(id)
                             },
-                            modifier = Modifier.padding(padding)
-                        )
-                    } else {
-                        // Paso 7: el detalle con comentarios
-                        PantallaDetalle(
-                            vm = vm,
-                            onVolver = { idSeleccionado = null },
                             modifier = Modifier.padding(padding)
                         )
                     }

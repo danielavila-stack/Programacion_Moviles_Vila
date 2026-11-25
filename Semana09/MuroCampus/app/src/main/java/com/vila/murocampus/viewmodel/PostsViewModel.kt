@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.vila.murocampus.data.PostRepository
 import com.vila.murocampus.model.Comentario
+import com.vila.murocampus.model.NuevoPost
 import com.vila.murocampus.model.Post
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
@@ -83,5 +84,25 @@ class PostsViewModel(private val repo: PostRepository) : ViewModel() {
 
     fun reintentarDetalle() {
         idDetalle?.let { abrir(it) }
+    }
+
+    // ---------- Crear (Paso 9) ----------
+    // null = todavía no se envió nada
+    private val _creacion = MutableStateFlow<UiState<Post>?>(null)
+    val creacion: StateFlow<UiState<Post>?> = _creacion.asStateFlow()
+
+    fun publicar(titulo: String, texto: String) {
+        viewModelScope.launch {
+            _creacion.value = UiState.Cargando
+            // POST posts con el NuevoPost en el cuerpo (@Body)
+            repo.crear(NuevoPost(userId = 1, title = titulo, body = texto))
+                .onSuccess { _creacion.value = UiState.Exito(it) }
+                .onFailure { _creacion.value = UiState.Error(mensajeDe(it)) }
+        }
+    }
+
+    // Al abrir la pantalla de crear, empieza limpia
+    fun limpiarCreacion() {
+        _creacion.value = null
     }
 }

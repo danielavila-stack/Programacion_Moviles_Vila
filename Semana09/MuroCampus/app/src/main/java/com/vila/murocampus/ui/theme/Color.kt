@@ -14,3 +14,6 @@ val AzulMuroClaro = Color(0xFF90CAF9)   // azul para modo oscuro
 // Colores de la etiqueta "Usuario N"
 val EtiquetaAzul = Color(0xFF1565C0)
 val EtiquetaAmarilla = Color(0xFFF2B233)
+// Paso 9: mensaje de éxito al publicar
+val VerdeExito = Color(0xFFDFF5E1)       // fondo verde claro
+val VerdeExitoTexto = Color(0xFF1B5E20)  // texto verde oscuro
