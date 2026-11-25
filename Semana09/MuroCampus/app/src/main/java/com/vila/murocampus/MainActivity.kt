@@ -8,6 +8,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.*
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -19,6 +21,7 @@ import com.vila.murocampus.ui.PantallaLista
 import com.vila.murocampus.ui.theme.MuroCampusTheme
 import com.vila.murocampus.viewmodel.PostsViewModel
 import com.vila.murocampus.viewmodel.PostsViewModelFactory
+import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
     @OptIn(ExperimentalMaterial3Api::class)
@@ -35,6 +38,10 @@ class MainActivity : ComponentActivity() {
                 // true = se ve el formulario de crear
                 var creando by rememberSaveable { mutableStateOf(false) }
 
+                // Mejora 3: aviso de abajo ("Publicación eliminada")
+                val avisos = remember { SnackbarHostState() }
+                val scope = rememberCoroutineScope()
+
                 val enLista = idSeleccionado == null && !creando
 
                 Scaffold(
@@ -47,6 +54,7 @@ class MainActivity : ComponentActivity() {
                             )
                         )
                     },
+                    snackbarHost = { SnackbarHost(avisos) },
                     floatingActionButton = {
                         // Paso 9: el botón + solo aparece en la lista
                         if (enLista) {
@@ -67,14 +75,20 @@ class MainActivity : ComponentActivity() {
                             modifier = Modifier.padding(padding)
                         )
 
-                        // Paso 7: detalle con comentarios
+                        // Paso 7 + Mejora 3: detalle con comentarios y botón Eliminar
                         idSeleccionado != null -> PantallaDetalle(
                             vm = vm,
                             onVolver = { idSeleccionado = null },
+                            onBorrado = { codigo ->
+                                idSeleccionado = null   // vuelve a la lista
+                                scope.launch {
+                                    avisos.showSnackbar("Publicación eliminada (código $codigo)")
+                                }
+                            },
                             modifier = Modifier.padding(padding)
                         )
 
-                        // Pasos 6 y 8: lista con filtro
+                        // Pasos 6 y 8: lista con filtro y búsqueda
                         else -> PantallaLista(
                             vm = vm,
                             onAbrir = { id ->

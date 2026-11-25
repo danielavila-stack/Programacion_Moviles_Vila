@@ -89,6 +89,7 @@ class PostsViewModel(private val repo: PostRepository) : ViewModel() {
 
     fun abrir(id: Int) {
         idDetalle = id
+        _borrado.value = null                // Mejora 3: cada detalle empieza sin mensaje de borrado
         trabajoDetalle?.cancel()             // si había otro detalle cargando, se cancela
         trabajoDetalle = viewModelScope.launch {
             _detalle.value = UiState.Cargando
@@ -133,5 +134,32 @@ class PostsViewModel(private val repo: PostRepository) : ViewModel() {
     // Al abrir la pantalla de crear, empieza limpia
     fun limpiarCreacion() {
         _creacion.value = null
+    }
+
+    // ---------- Borrar (Fase 2 · Mejora 3) ----------
+    // null = no se pidió borrar. Éxito guarda el código de respuesta (200).
+    private val _borrado = MutableStateFlow<UiState<Int>?>(null)
+    val borrado: StateFlow<UiState<Int>?> = _borrado.asStateFlow()
+
+    fun borrar(id: Int) {
+        viewModelScope.launch {
+            _borrado.value = UiState.Cargando
+            repo.borrar(id)
+                .onSuccess { codigo ->
+                    // JSONPlaceholder no borra de verdad: la quitamos de la lista local
+                    // para que el usuario vea el resultado
+                    val actual = _lista.value
+                    if (actual is UiState.Exito) {
+                        _lista.value = UiState.Exito(actual.datos.filter { it.id != id })
+                    }
+                    _borrado.value = UiState.Exito(codigo)
+                }
+                .onFailure { _borrado.value = UiState.Error(mensajeDe(it)) }
+        }
+    }
+
+    // Después de mostrar el aviso, se limpia
+    fun limpiarBorrado() {
+        _borrado.value = null
     }
 }
