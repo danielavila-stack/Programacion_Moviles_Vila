@@ -1,8 +1,12 @@
 # MuroCampus
 
-**Alumna:** Daniela Fransua Vila Ramos  
+**Alumna:** Daniela Fransua Vila Ramos
+
+**Curso:** Programación en Móviles · Tecsup
+
 **Laboratorio:** Semana 09 · Consumo de API REST con Retrofit
-**Rama:** sin-ia (Fase 1)
+
+**Rama:** sin-ia (Fase 1) · con-ia (Fase 2)
 
 ## Descripción
 
@@ -123,3 +127,52 @@ Sin el permiso `INTERNET`, Android bloquea la conexión y ninguna llamada llega 
 
 **6. JSONPlaceholder no guarda los POST. ¿Cómo cambiaría tu app si usaras un servicio real?**
 El servidor guardaría la publicación y devolvería su id real. Después de publicar, habría que actualizar la lista: volver a llamar `cargar()` o agregar el `Post` que devuelve el servidor. El `userId` ya no sería fijo (`1`), sino el del usuario que inició sesión, y cada petición llevaría un token de autenticación en un header, por ejemplo con un interceptor de OkHttp. También habría que manejar errores nuevos, como 400 (datos inválidos) o 401 (sin sesión).
+
+---
+
+# Fase 2 · Mejoras con IA
+
+**Rama:** con-ia
+
+Sobre la app de la Fase 1 se hicieron 3 mejoras con ayuda de IA, sin romper la arquitectura MVVM + Repository. Los prompts usados, lo que respondió la IA y lo que se corrigió están en [PROMPTS.md](PROMPTS.md).
+
+| N | Mejora | Capas que cambian | Commit |
+| --- | --- | --- | --- |
+| 1 | Encabezado con interceptor | RetrofitClient | `feat(red): agrega interceptor con encabezado Accept` |
+| 2 | Búsqueda por título | ViewModel + View | `feat(busqueda): filtra publicaciones por titulo` |
+| 3 | Borrar publicación | API + Repository + ViewModel + View | `feat(borrar): elimina publicacion con DELETE y Response` |
+
+## Capturas de la Fase 2
+
+| Mejora 1 · Interceptor | Mejora 2 · Búsqueda | Mejora 3 · Borrar |
+| --- | --- | --- |
+| ![Accept en Logcat](capturas/accept-logcat.jpeg) | ![Búsqueda](capturas/busqueda.jpeg) | ![Diálogo eliminar](capturas/eliminar-dialogo.jpeg) |
+| `Accept: application/json` en Logcat | Búsqueda "qui" con contador (33 publicaciones) | Confirmación antes de borrar |
+| | ![Sin resultados](capturas/sin-resultado.jpeg) | ![Eliminado](capturas/eliminado.jpeg) |
+| | Sin resultados + Borrar búsqueda | Aviso "Publicación eliminada (código 200)" y la lista con 9 publicaciones |
+
+## Mejora 1 · Interceptor con encabezado Accept
+
+Un `Interceptor` de OkHttp agrega `Accept: application/json` a **todas** las peticiones, sin repetirlo en cada endpoint de `PostApi`. Se registra **antes** del `HttpLoggingInterceptor`; si fuera al revés, el log mostraría la petición sin el encabezado. No cambia nada visible en la app: se comprueba en Logcat.
+
+## Mejora 2 · Búsqueda por título
+
+Una barra de búsqueda con estilo Material 3 filtra por título las publicaciones **ya descargadas**, sin hacer nuevas peticiones a la API. El filtro vive en el ViewModel: `combine(_lista, _busqueda)` produce `listaVisible`, y la pantalla solo la dibuja. La búsqueda funciona junto con el filtro por usuario y no distingue mayúsculas. Arriba de la lista muestra un contador, y si no encuentra nada, el estado *Sin resultados* con el botón **Borrar búsqueda**.
+
+## Mejora 3 · Borrar publicación con DELETE
+
+El detalle tiene un botón **Eliminar** que pide confirmación con un `AlertDialog`. La API declara `@DELETE("posts/{id}")` y devuelve `Response<Unit>`. El **Repository** revisa `isSuccessful`: si el código no es 2xx, lanza `HttpException`, y `llamar{}` lo convierte en `Result.failure`. Así el ViewModel sigue sin conocer Retrofit. Si sale bien, la app vuelve a la lista y muestra el aviso *Publicación eliminada (código 200)*. Como JSONPlaceholder no borra de verdad, el ViewModel quita la publicación de la lista local.
+
+## Pruebas de la Fase 2
+
+| Prueba | Cómo se hizo | Resultado | OK |
+| --- | --- | --- | --- |
+| Encabezado | Logcat con `tag:okhttp` | `Accept: application/json` en GET, POST y DELETE | Sí |
+| Buscar | Escribir "qui" | Solo títulos con "qui" | Sí |
+| Sin resultados | Escribir "zzz" | Sin resultados + Borrar búsqueda | Sí |
+| Búsqueda local | Escribir y mirar Logcat | No hay peticiones nuevas | Sí |
+| Búsqueda + filtro | Usuario 2 y escribir "et" | Solo publicaciones del usuario 2 con "et" | Sí |
+| Cancelar borrado | Eliminar y luego Cancelar | No se borra nada | Sí |
+| Borrar | Eliminar y confirmar | DELETE 200, vuelve a la lista sin esa publicación | Sí |
+| Borrar sin internet | Modo avión y Eliminar | No se pudo eliminar + mensaje, se queda en el detalle | Sí |
+| Código | Revisar PostsViewModel | Sin Retrofit, PostApi, Response ni HttpException | Sí |
