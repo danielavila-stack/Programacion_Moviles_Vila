@@ -144,12 +144,17 @@ Sobre la app de la Fase 1 se hicieron 3 mejoras con ayuda de IA, sin romper la a
 
 ## Capturas de la Fase 2
 
-| Mejora 1 · Interceptor | Mejora 2 · Búsqueda | Mejora 3 · Borrar |
-| --- | --- | --- |
-| ![Accept en Logcat](capturas/accept-logcat.jpeg) | ![Búsqueda](capturas/busqueda.jpeg) | ![Diálogo eliminar](capturas/eliminar-dialogo.jpeg) |
-| `Accept: application/json` en Logcat | Búsqueda "qui" con contador (33 publicaciones) | Confirmación antes de borrar |
-| | ![Sin resultados](capturas/sin-resultado.jpeg) | ![Eliminado](capturas/eliminado.jpeg) |
-| | Sin resultados + Borrar búsqueda | Aviso "Publicación eliminada (código 200)" y la lista con 9 publicaciones |
+| Mejora 1 · Interceptor |
+| --- |
+| ![Accept en Logcat](capturas/accept-logcat.jpeg) |
+| `Accept: application/json` en todas las peticiones (Logcat) |
+
+| Mejora 2 · Búsqueda | Mejora 3 · Borrar |
+| --- | --- |
+| ![Búsqueda](capturas/busqueda.jpeg) | ![Diálogo eliminar](capturas/eliminar-dialogo.jpeg) |
+| Búsqueda "qui" con contador (33 publicaciones) | Confirmación antes de borrar |
+| ![Sin resultados](capturas/sin-resultado.jpeg) | ![Eliminado](capturas/eliminado.jpeg) |
+| Sin resultados + Borrar búsqueda | Aviso "Publicación eliminada (código 200)" y la lista con 9 publicaciones |
 
 ## Mejora 1 · Interceptor con encabezado Accept
 
