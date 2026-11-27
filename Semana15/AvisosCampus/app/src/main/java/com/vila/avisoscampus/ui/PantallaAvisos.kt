@@ -50,6 +50,7 @@ fun PantallaAvisos(vm: AvisosViewModel, modifier: Modifier = Modifier) {
     val faltan by vm.faltan.collectAsState()
     val corriendo = faltan != null  // hay una cuenta regresiva en curso
     val escuchando by vm.escuchandoAvion.collectAsState()
+    val avisos by vm.avisos.collectAsState()  // historial (vive en el Repository)
 
     // Registra el receptor solo mientras el Switch esté activo.
     // Se vuelve a ejecutar cada vez que cambia "escuchando".
@@ -166,7 +167,9 @@ fun PantallaAvisos(vm: AvisosViewModel, modifier: Modifier = Modifier) {
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
-        Tarjeta("Historial") { Text("Pendiente") }
+        Tarjeta("Historial") {
+            HistorialAvisos(avisos = avisos)
+        }
     }
 }
 
