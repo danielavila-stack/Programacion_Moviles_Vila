@@ -21,10 +21,13 @@ import com.vila.avisoscampus.model.Aviso
 object Notificador {
 
     const val CANAL = "avisos"
+    // Fase 2 · Mejora 1: canal para avisos importantes (salen flotando arriba)
+    const val CANAL_URGENTE = "urgentes"
 
-    // Crea el canal "Avisos". Desde Android 8 (API 26) toda notificación
-    // necesita un canal; en versiones anteriores no existe y no se hace nada.
-    // Crearlo varias veces no pasa nada: Android ignora si ya existe.
+    // Crea los canales "Avisos" y "Urgentes". Desde Android 8 (API 26) toda
+    // notificación necesita un canal; en versiones anteriores no se hace nada.
+    // Crearlos varias veces no pasa nada: Android ignora si ya existen.
+    // OJO: la importancia de un canal no se puede cambiar después de creado.
     fun crearCanal(context: Context) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val canal = NotificationChannel(
@@ -34,8 +37,17 @@ object Notificador {
             ).apply {
                 description = "Notificaciones de la app"
             }
+            // Fase 2 · Mejora 1: IMPORTANCE_HIGH = suena y aparece emergente
+            val canalUrgente = NotificationChannel(
+                CANAL_URGENTE,
+                "Urgentes",
+                NotificationManager.IMPORTANCE_HIGH
+            ).apply {
+                description = "Recordatorios importantes"
+            }
             val manager = context.getSystemService(NotificationManager::class.java)
             manager.createNotificationChannel(canal)
+            manager.createNotificationChannel(canalUrgente)  // Fase 2 · Mejora 1
         }
     }
 
@@ -66,11 +78,21 @@ object Notificador {
             PendingIntent.FLAG_IMMUTABLE
         )
 
-        val notificacion = NotificationCompat.Builder(context, CANAL)
+        // Fase 2 · Mejora 1: el Notificador NO decide qué es urgente (eso lo hace
+        // el ViewModel); solo elige el canal y la prioridad según aviso.urgente.
+        // La prioridad sirve para Android 7 o menos, donde no hay canales.
+        val canal = if (aviso.urgente) CANAL_URGENTE else CANAL
+        val prioridad = if (aviso.urgente) {
+            NotificationCompat.PRIORITY_HIGH
+        } else {
+            NotificationCompat.PRIORITY_DEFAULT
+        }
+
+        val notificacion = NotificationCompat.Builder(context, canal)
             .setSmallIcon(R.drawable.ic_notificacion)       // campana blanca
             .setContentTitle(aviso.titulo)
             .setContentText(aviso.texto)
-            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+            .setPriority(prioridad)
             .setContentIntent(pendiente)                    // abre la app al tocarla
             .setAutoCancel(true)                            // se quita al tocarla
             .build()

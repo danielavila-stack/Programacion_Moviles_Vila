@@ -13,7 +13,10 @@ data class Aviso(
     val titulo: String,
     val texto: String,
     val origen: Origen,
-    val hora: String      // formato HH:mm:ss
+    val hora: String,     // formato HH:mm:ss
+    // Fase 2 · Mejora 1: si es urgente se muestra por el canal "Urgentes".
+    // Tiene valor por defecto para no romper el código que ya crea avisos.
+    val urgente: Boolean = false
 )
 
 // Estado del permiso de notificaciones que ve la pantalla
