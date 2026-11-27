@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -40,6 +41,8 @@ import com.vila.avisoscampus.viewmodel.AvisosViewModel
 fun PantallaAvisos(vm: AvisosViewModel, modifier: Modifier = Modifier) {
     val contexto = LocalContext.current
     val permiso by vm.permiso.collectAsState()
+    val faltan by vm.faltan.collectAsState()
+    val corriendo = faltan != null  // hay una cuenta regresiva en curso
 
     // Lanzador del cuadro de permiso de Android: al responder, avisa al ViewModel
     val lanzadorPermiso = rememberLauncherForActivityResult(
@@ -96,7 +99,30 @@ fun PantallaAvisos(vm: AvisosViewModel, modifier: Modifier = Modifier) {
                 Text("Mostrar aviso")
             }
         }
-        Tarjeta("Recordatorio") { Text("Pendiente") }
+        Tarjeta("Recordatorio") {
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                // Deshabilitado mientras la cuenta está corriendo
+                Button(
+                    onClick = { vm.recordarEn(10) },
+                    enabled = !corriendo
+                ) {
+                    Text("Recordar en 10 s")
+                }
+                // Solo habilitado mientras la cuenta está corriendo
+                OutlinedButton(
+                    onClick = { vm.cancelarRecordatorio() },
+                    enabled = corriendo
+                ) {
+                    Text("Cancelar")
+                }
+            }
+            if (faltan != null) {
+                Text(
+                    text = "Faltan $faltan s",
+                    fontWeight = FontWeight.Bold
+                )
+            }
+        }
         Tarjeta("Receptor de anuncios") { Text("Pendiente") }
         Tarjeta("Historial") { Text("Pendiente") }
     }

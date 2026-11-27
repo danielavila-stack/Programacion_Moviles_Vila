@@ -6,6 +6,8 @@ import com.vila.avisoscampus.data.AvisosRepository
 import com.vila.avisoscampus.model.Aviso
 import com.vila.avisoscampus.model.Origen
 import com.vila.avisoscampus.model.PermisoUi
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -50,5 +52,43 @@ class AvisosViewModel(private val repo: AvisosRepository) : ViewModel() {
             )
             _eventos.emit(aviso)
         }
+    }
+
+    // ===== Recordatorio con cuenta regresiva =====
+
+    // La corrutina de la cuenta regresiva (null si nunca se lanzó)
+    private var trabajo: Job? = null
+
+    // Segundos que faltan (null = no hay cuenta en curso)
+    private val _faltan = MutableStateFlow<Int?>(null)
+    val faltan: StateFlow<Int?> = _faltan.asStateFlow()
+
+    // Inicia la cuenta. Vive en viewModelScope: sigue aunque se minimice la app
+    // o se rote la pantalla, y se cancela sola si el ViewModel se destruye.
+    fun recordarEn(segundos: Int = 10) {
+        if (trabajo?.isActive == true) return  // ya hay una cuenta corriendo
+
+        trabajo = viewModelScope.launch {
+            try {
+                for (s in segundos downTo 1) {
+                    _faltan.value = s
+                    delay(1000)  // espera 1 segundo sin bloquear la app
+                }
+                val aviso = repo.registrar(
+                    titulo = "Recordatorio",
+                    texto = "Revisa tu laboratorio pendiente",
+                    origen = Origen.RECORDATORIO
+                )
+                _eventos.emit(aviso)
+            } finally {
+                // Se ejecuta al terminar o al cancelar: limpia el contador
+                _faltan.value = null
+            }
+        }
+    }
+
+    // Cancela la cuenta: delay() se interrumpe y no se emite ningún aviso
+    fun cancelarRecordatorio() {
+        trabajo?.cancel()
     }
 }
