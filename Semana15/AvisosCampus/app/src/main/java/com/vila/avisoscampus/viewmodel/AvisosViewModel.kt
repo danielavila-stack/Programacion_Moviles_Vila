@@ -1,9 +1,12 @@
 package com.vila.avisoscampus.viewmodel
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.vila.avisoscampus.data.AvisosRepository
 import com.vila.avisoscampus.model.Aviso
+import com.vila.avisoscampus.model.Origen
 import com.vila.avisoscampus.model.PermisoUi
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -34,5 +37,18 @@ class AvisosViewModel(private val repo: AvisosRepository) : ViewModel() {
     // El ViewModel solo guarda el resultado; no sabe pedir permisos.
     fun permisoRespondido(concedido: Boolean) {
         _permiso.value = if (concedido) PermisoUi.Concedido else PermisoUi.Denegado
+    }
+
+    // Botón "Mostrar aviso": registra el aviso en el historial y emite el evento.
+    // La pantalla recibe el evento y es ella quien muestra la notificación.
+    fun avisarAhora() {
+        viewModelScope.launch {
+            val aviso = repo.registrar(
+                titulo = "Tarea lista",
+                texto = "Tu entrega fue registrada",
+                origen = Origen.BOTON
+            )
+            _eventos.emit(aviso)
+        }
     }
 }

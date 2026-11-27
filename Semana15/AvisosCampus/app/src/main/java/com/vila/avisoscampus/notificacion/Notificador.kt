@@ -1,12 +1,16 @@
 package com.vila.avisoscampus.notificacion
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Build
+import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
+import com.vila.avisoscampus.R
 import com.vila.avisoscampus.model.Aviso
 
 // Habla con el sistema Android (canal, permiso, NotificationManagerCompat).
@@ -42,7 +46,22 @@ object Notificador {
         ) == PackageManager.PERMISSION_GRANTED
     }
 
+    // Muestra el aviso como notificación.
+    // Devuelve true si se mostró y false si no hay permiso (sin lanzar error).
+    @SuppressLint("MissingPermission") // el permiso se revisa justo abajo
     fun mostrar(context: Context, aviso: Aviso): Boolean {
-        return false
+        if (!tienePermiso(context)) return false
+
+        val notificacion = NotificationCompat.Builder(context, CANAL)
+            .setSmallIcon(R.drawable.ic_notificacion)       // campana blanca
+            .setContentTitle(aviso.titulo)
+            .setContentText(aviso.texto)
+            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+            .setAutoCancel(true)                            // se quita al tocarla
+            .build()
+
+        // Cada aviso tiene su propio id, así no se reemplazan entre sí
+        NotificationManagerCompat.from(context).notify(aviso.id, notificacion)
+        return true
     }
 }

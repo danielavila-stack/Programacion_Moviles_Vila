@@ -90,7 +90,12 @@ fun PantallaAvisos(vm: AvisosViewModel, modifier: Modifier = Modifier) {
                 Text("Permitir notificaciones")
             }
         }
-        Tarjeta("Avisos") { Text("Pendiente") }
+        Tarjeta("Avisos") {
+            // El ViewModel registra el aviso y emite el evento
+            Button(onClick = { vm.avisarAhora() }) {
+                Text("Mostrar aviso")
+            }
+        }
         Tarjeta("Recordatorio") { Text("Pendiente") }
         Tarjeta("Receptor de anuncios") { Text("Pendiente") }
         Tarjeta("Historial") { Text("Pendiente") }
