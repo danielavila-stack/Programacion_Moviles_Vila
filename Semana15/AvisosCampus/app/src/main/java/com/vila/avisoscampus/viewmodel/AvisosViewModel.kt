@@ -124,4 +124,28 @@ class AvisosViewModel(private val repo: AvisosRepository) : ViewModel() {
             _eventos.emit(aviso)
         }
     }
+
+    // ===== Fase 2 · Mejora 3: receptor del cargador =====
+
+    // ¿La pantalla debe tener registrado el receptor del cargador?
+    // Es independiente del switch del modo avión.
+    private val _escuchandoCargador = MutableStateFlow(false)
+    val escuchandoCargador: StateFlow<Boolean> = _escuchandoCargador.asStateFlow()
+
+    fun cambiarEscuchaCargador(valor: Boolean) {
+        _escuchandoCargador.value = valor
+    }
+
+    // La pantalla llama a esto cuando el receptor detecta el cable.
+    // El ViewModel solo recibe true/false: no sabe qué es un BroadcastReceiver.
+    fun alCambiarCargador(conectado: Boolean) {
+        viewModelScope.launch {
+            val aviso = repo.registrar(
+                titulo = "Cargador",
+                texto = if (conectado) "Conectado" else "Desconectado",
+                origen = Origen.CARGADOR
+            )
+            _eventos.emit(aviso)
+        }
+    }
 }

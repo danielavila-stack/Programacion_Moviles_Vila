@@ -80,6 +80,7 @@ private fun EtiquetaOrigen(origen: Origen) {
         Origen.BOTON -> Color(0xFF1565C0)        // azul
         Origen.RECORDATORIO -> Color(0xFFEF6C00) // naranja
         Origen.MODO_AVION -> Color(0xFF00838F)   // turquesa
+        Origen.CARGADOR -> Color(0xFF2E7D32)     // verde · Fase 2 · Mejora 3
     }
     Text(
         text = origen.texto,

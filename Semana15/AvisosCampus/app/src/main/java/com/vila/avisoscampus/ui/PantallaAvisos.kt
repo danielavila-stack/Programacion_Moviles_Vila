@@ -12,6 +12,7 @@ import androidx.compose.material3.Switch
 import androidx.compose.runtime.DisposableEffect
 import androidx.core.content.ContextCompat
 import com.vila.avisoscampus.receiver.ModoAvionReceiver
+import com.vila.avisoscampus.receiver.CargadorReceiver
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
@@ -72,6 +73,29 @@ fun PantallaAvisos(vm: AvisosViewModel, modifier: Modifier = Modifier) {
             onDispose { contexto.unregisterReceiver(receptor) }
         } else {
             onDispose { }  // no hay nada que quitar
+        }
+    }
+
+    // Fase 2 · Mejora 3: receptor del cargador con su PROPIO DisposableEffect,
+    // así cada switch registra y quita solo su receptor.
+    val escuchandoCargador by vm.escuchandoCargador.collectAsState()
+    DisposableEffect(escuchandoCargador) {
+        if (escuchandoCargador) {
+            val receptor = CargadorReceiver { conectado -> vm.alCambiarCargador(conectado) }
+            // Un solo filtro con las dos acciones: conectar y desconectar
+            val filtro = IntentFilter().apply {
+                addAction(Intent.ACTION_POWER_CONNECTED)
+                addAction(Intent.ACTION_POWER_DISCONNECTED)
+            }
+            ContextCompat.registerReceiver(
+                contexto,
+                receptor,
+                filtro,
+                ContextCompat.RECEIVER_NOT_EXPORTED
+            )
+            onDispose { contexto.unregisterReceiver(receptor) }
+        } else {
+            onDispose { }
         }
     }
 
@@ -203,6 +227,23 @@ fun PantallaAvisos(vm: AvisosViewModel, modifier: Modifier = Modifier) {
             }
             Text(
                 text = "Activa o desactiva el modo avión del celular",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            // Fase 2 · Mejora 3: segundo switch, independiente del modo avión
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text("Escuchar el cargador")
+                Switch(
+                    checked = escuchandoCargador,
+                    onCheckedChange = { vm.cambiarEscuchaCargador(it) }
+                )
+            }
+            Text(
+                text = "Conecta o desconecta el cable de carga",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
