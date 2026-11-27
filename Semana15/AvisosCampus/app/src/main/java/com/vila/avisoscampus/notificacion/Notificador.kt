@@ -4,12 +4,15 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.app.NotificationChannel
 import android.app.NotificationManager
+import android.app.PendingIntent
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
+import com.vila.avisoscampus.MainActivity
 import com.vila.avisoscampus.R
 import com.vila.avisoscampus.model.Aviso
 
@@ -52,11 +55,23 @@ object Notificador {
     fun mostrar(context: Context, aviso: Aviso): Boolean {
         if (!tienePermiso(context)) return false
 
+        // Qué se abre al tocar la notificación: la pantalla principal
+        val intent = Intent(context, MainActivity::class.java)
+        // PendingIntent = "permiso" para que Android lance ese Intent después,
+        // aunque la app esté cerrada. FLAG_IMMUTABLE es obligatorio desde Android 12.
+        val pendiente = PendingIntent.getActivity(
+            context,
+            0,
+            intent,
+            PendingIntent.FLAG_IMMUTABLE
+        )
+
         val notificacion = NotificationCompat.Builder(context, CANAL)
             .setSmallIcon(R.drawable.ic_notificacion)       // campana blanca
             .setContentTitle(aviso.titulo)
             .setContentText(aviso.texto)
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+            .setContentIntent(pendiente)                    // abre la app al tocarla
             .setAutoCancel(true)                            // se quita al tocarla
             .build()
 
