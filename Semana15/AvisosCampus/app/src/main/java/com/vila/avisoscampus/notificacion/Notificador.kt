@@ -1,9 +1,12 @@
 package com.vila.avisoscampus.notificacion
 
+import android.Manifest
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
+import android.content.pm.PackageManager
 import android.os.Build
+import androidx.core.content.ContextCompat
 import com.vila.avisoscampus.model.Aviso
 
 // Habla con el sistema Android (canal, permiso, NotificationManagerCompat).
@@ -29,8 +32,14 @@ object Notificador {
         }
     }
 
+    // ¿La app puede mostrar notificaciones?
+    // Antes de Android 13 (API 33) el permiso no existe: se concede solo.
     fun tienePermiso(context: Context): Boolean {
-        return true
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) return true
+        return ContextCompat.checkSelfPermission(
+            context,
+            Manifest.permission.POST_NOTIFICATIONS
+        ) == PackageManager.PERMISSION_GRANTED
     }
 
     fun mostrar(context: Context, aviso: Aviso): Boolean {
