@@ -30,9 +30,5 @@ class AvisosViewModel(private val repo: AvisosRepository) : ViewModel() {
     private val _mensaje = MutableStateFlow<String?>(null)
     val mensaje: StateFlow<String?> = _mensaje.asStateFlow()
 
-    // TODO Paso 2: permisoRespondido(concedido) cambia _permiso a Concedido o Denegado.
-    // TODO Paso 3: avisarAhora() registra "Tarea lista" y emite el aviso en _eventos.
-    // TODO Paso 5: recordarEn(segundos) con cuenta regresiva y cancelarRecordatorio().
-    // TODO Paso 6: cambiarEscucha(valor) y alCambiarModoAvion(activo).
-    // TODO Paso 8: noSePudoMostrar() pone el mensaje de permiso denegado.
+
 }
