@@ -1,9 +1,13 @@
 package com.vila.avisoscampus.ui
 
 import android.Manifest
+import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.net.Uri
 import android.os.Build
+import android.provider.Settings
+import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.compose.material3.Switch
 import androidx.compose.runtime.DisposableEffect
 import androidx.core.content.ContextCompat
@@ -51,6 +55,7 @@ fun PantallaAvisos(vm: AvisosViewModel, modifier: Modifier = Modifier) {
     val corriendo = faltan != null  // hay una cuenta regresiva en curso
     val escuchando by vm.escuchandoAvion.collectAsState()
     val avisos by vm.avisos.collectAsState()  // historial (vive en el Repository)
+    val mensaje by vm.mensaje.collectAsState()  // error de permiso (null = sin error)
 
     // Registra el receptor solo mientras el Switch esté activo.
     // Se vuelve a ejecutar cada vez que cambia "escuchando".
@@ -88,8 +93,19 @@ fun PantallaAvisos(vm: AvisosViewModel, modifier: Modifier = Modifier) {
     // es ella quien le pide al Notificador que muestre la notificación.
     LaunchedEffect(Unit) {
         vm.eventos.collect { aviso ->
-            Notificador.mostrar(contexto, aviso)
+            // Si no hay permiso, mostrar() devuelve false (sin cerrar la app)
+            val mostrado = Notificador.mostrar(contexto, aviso)
+            if (!mostrado) vm.noSePudoMostrar()
         }
+    }
+
+    // Al volver a la app (por ejemplo, desde "Abrir ajustes"):
+    // si el usuario activó las notificaciones, se actualiza el estado y se quita el mensaje
+    LifecycleResumeEffect(Unit) {
+        if (Notificador.tienePermiso(contexto)) {
+            vm.permisoRespondido(true)
+        }
+        onPauseOrDispose { }
     }
 
     Column(
@@ -117,6 +133,30 @@ fun PantallaAvisos(vm: AvisosViewModel, modifier: Modifier = Modifier) {
                 }
             }) {
                 Text("Permitir notificaciones")
+            }
+
+            // Recuadro de error: solo aparece si un aviso no se pudo mostrar
+            mensaje?.let { texto ->
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(
+                            MaterialTheme.colorScheme.errorContainer,
+                            RoundedCornerShape(8.dp)
+                        )
+                        .padding(12.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Text(
+                        text = texto,
+                        color = MaterialTheme.colorScheme.onErrorContainer,
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                    OutlinedButton(onClick = { abrirAjustesNotificaciones(contexto) }) {
+                        Text("Abrir ajustes")
+                    }
+                }
             }
         }
         Tarjeta("Avisos") {
@@ -171,6 +211,19 @@ fun PantallaAvisos(vm: AvisosViewModel, modifier: Modifier = Modifier) {
             HistorialAvisos(avisos = avisos)
         }
     }
+}
+
+// Abre la pantalla de Ajustes con las notificaciones de esta app
+private fun abrirAjustesNotificaciones(contexto: Context) {
+    val intent = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS)
+            .putExtra(Settings.EXTRA_APP_PACKAGE, contexto.packageName)
+    } else {
+        // Android 7 no tiene esa pantalla: abrimos la info general de la app
+        Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
+            .setData(Uri.fromParts("package", contexto.packageName, null))
+    }
+    contexto.startActivity(intent)
 }
 
 // Etiqueta de color según el estado del permiso
