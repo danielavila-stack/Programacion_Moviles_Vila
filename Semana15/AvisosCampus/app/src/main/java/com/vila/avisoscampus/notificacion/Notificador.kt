@@ -88,10 +88,16 @@ object Notificador {
             NotificationCompat.PRIORITY_DEFAULT
         }
 
+        // Fase 2 · Mejora 2: texto que se ve al EXPANDIR la notificación.
+        // Primera línea: el texto del aviso; segunda línea: origen y hora.
+        val textoLargo = "${aviso.texto}\nOrigen: ${aviso.origen.texto} · Hora: ${aviso.hora}"
+
         val notificacion = NotificationCompat.Builder(context, canal)
             .setSmallIcon(R.drawable.ic_notificacion)       // campana blanca
             .setContentTitle(aviso.titulo)
-            .setContentText(aviso.texto)
+            .setContentText(aviso.texto)                    // texto corto (cerrada)
+            // Fase 2 · Mejora 2: BigTextStyle muestra el texto completo al expandirla
+            .setStyle(NotificationCompat.BigTextStyle().bigText(textoLargo))
             .setPriority(prioridad)
             .setContentIntent(pendiente)                    // abre la app al tocarla
             .setAutoCancel(true)                            // se quita al tocarla
