@@ -125,3 +125,55 @@ La segunda **reemplaza** a la primera, así que el usuario solo ve una. Sirve pa
 
 **5. ¿En qué casos usarías una notificación local y en cuáles una push de Firebase?**
 La **local** sirve cuando el aviso nace en el mismo celular: un recordatorio, un temporizador, un cambio del sistema como el modo avión, o el fin de una descarga. No necesita internet ni servidor. La **push de Firebase (FCM)** sirve cuando el aviso nace en un servidor o en otra persona: un mensaje de chat, una nota publicada por el docente o un anuncio para todos los alumnos. Llega aunque la app esté cerrada y no haya hecho nada.
+
+---
+
+# Fase 2 · Mejoras con IA
+
+Rama: `con-ia` · Registro de prompts: [PROMPTS.md](PROMPTS.md)
+
+En esta fase se agregaron 3 mejoras con ayuda de IA, sin romper la arquitectura MVVM + Repository: el ViewModel sigue sin `Context`, `NotificationManager` ni `BroadcastReceiver`.
+
+| N | Mejora | Capas que cambian | Commit |
+|---|--------|-------------------|--------|
+| 1 | Dos canales: Urgentes y Avisos | Model, Notificador, ViewModel | `feat(canales): agrega canal Urgentes para el recordatorio` |
+| 2 | Texto largo con BigTextStyle | Notificador | `feat(notificacion): muestra texto largo con BigTextStyle` |
+| 3 | Receptor del cargador | Model, Receiver, ViewModel, UI | `feat(receptor): escucha el cargador con su propio switch` |
+
+## Capturas de la Fase 2
+
+| Mejora 1 · Canales | Mejora 2 · Texto largo | Mejora 3 · Cargador |
+|--------------------|------------------------|---------------------|
+| ![Canales](capturas/canales.jpeg) | ![Texto largo](capturas/texto-largo.jpeg) | ![Cargador](capturas/cargador.jpeg) |
+| Ajustes de la app con los dos canales: "Avisos" y "Urgentes" | Notificación expandida con el texto, el origen y la hora | Aviso "Cargador" con su etiqueta verde en el historial |
+| ![Urgente](capturas/urgente.jpeg) | | |
+| El recordatorio aparece como notificación emergente arriba de la pantalla | | |
+
+## Cómo funciona cada mejora
+
+**Mejora 1 · Dos canales (Urgentes y Avisos).**
+`Aviso` tiene un campo nuevo, `urgente: Boolean = false`. El valor por defecto evita romper el código que ya existía. El **ViewModel** decide qué es urgente: al terminar el recordatorio emite `aviso.copy(urgente = true)`. El **Notificador** crea dos canales, `avisos` (IMPORTANCE_DEFAULT) y `urgentes` (IMPORTANCE_HIGH), y solo elige el canal y la prioridad según `aviso.urgente`. Como la importancia de un canal no se puede cambiar después de creado, hay que desinstalar la app para que el canal nuevo se cree bien.
+*Capas: Model, Notificador, ViewModel.*
+
+**Mejora 2 · Texto largo con BigTextStyle.**
+La notificación cerrada sigue mostrando el texto corto (`setContentText`). Al expandirla, `NotificationCompat.BigTextStyle()` muestra el texto completo y una segunda línea con `Origen: … · Hora: …`.
+*Capa: solo el Notificador. El ViewModel no cambia, porque el formato visual es un detalle de Android.*
+
+**Mejora 3 · Receptor del cargador.**
+`CargadorReceiver` escucha `ACTION_POWER_CONNECTED` y `ACTION_POWER_DISCONNECTED`. Su `onReceive` es corto: solo llama a `alCambiar(true/false)`. La pantalla tiene un segundo Switch, "Escuchar el cargador", y un `DisposableEffect` **propio** que registra el receptor con `RECEIVER_NOT_EXPORTED` y lo quita en `onDispose`. El ViewModel guarda el estado del switch y registra el aviso con el nuevo origen `CARGADOR`, que en el historial aparece con una etiqueta verde.
+*Capas: Model, Receiver, ViewModel, UI (pantalla e historial).*
+
+## Pruebas de la Fase 2
+
+| Prueba | Cómo se hizo | Resultado | OK |
+|--------|--------------|-----------|----|
+| Existen los dos canales | Desinstalar, reinstalar y abrir Ajustes > Apps > AvisosCampus > Notificaciones | Aparecen "Avisos" y "Urgentes" | Sí |
+| El recordatorio es urgente | Pulsar "Recordar en 10 s" e ir a la pantalla de inicio | La notificación aparece emergente arriba | Sí |
+| "Mostrar aviso" sigue normal | Pulsar "Mostrar aviso" | Sale en la cortina, sin emerger | Sí |
+| Texto corto al estar cerrada | Pulsar "Mostrar aviso" y bajar la cortina | Se ve solo "Tu entrega fue registrada" | Sí |
+| Texto largo al expandir | Deslizar hacia abajo sobre la notificación | Se ve el texto, el origen y la hora | Sí |
+| Cargador conectado | Activar "Escuchar el cargador" y conectar el cable | Sale "Cargador - Conectado" | Sí |
+| Cargador desconectado | Con el switch activo, desconectar el cable | Sale "Cargador - Desconectado" | Sí |
+| Switch del cargador apagado | Apagar el switch y conectar o desconectar el cable | No sale ningún aviso | Sí |
+| Switches independientes | Activar solo uno de los dos switches y probar ambos eventos | Solo avisa el receptor activo | Sí |
+| Etiqueta en el historial | Revisar el historial después de usar el cargador | Los avisos muestran la etiqueta "Cargador" | Sí |
